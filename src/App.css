@@ -1,42 +1,161 @@
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@900&family=Inter:wght@400;700;900&display=swap');
+
+:root {
+  --app-bg: #f5f5f5;
+  --bento-pink: #fbcfe8;
+  --bento-lime: #d9f99d;
+  --bento-blue: #c7e4ff; /* Neutraali väri status-palkille */
+  --bento-yellow: #f4ffb5;
+  --text-dark: #000000;
+  --border-thick: 2px solid #000000;
+}
+
+body {
+  background-color: var(--app-bg);
+  font-family: 'Inter', sans-serif;
+  color: var(--text-dark);
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  max-width: 420px;
+  width: 100%;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* KESKITETTY HEADER */
+.header-card {
+  background-color: var(--bento-pink);
+  padding: 30px;
+  border-radius: 24px;
+  border: var(--border-thick);
+  text-align: center; /* Korjattu: Keskellä */
+  box-shadow: 4px 4px 0px #000000;
+}
+
+.glock-text {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 900;
+  font-size: 2.2rem;
+  margin: 0;
+}
+
+/* HARJOITUSKORTTI */
+.exercise-card {
+  background-color: white;
+  border-radius: 24px;
+  padding: 22px;
+  border: var(--border-thick);
+  box-shadow: 4px 4px 0px #000000;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* SWAP-NAPPI OIKEALLE */
+.exercise-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.exercise-title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 900;
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.swap-icon-btn {
+  background: var--bento-pink;
+  border: var(--border-thick);
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+/* VÄRIKOODATTU STATUS */
+.stats-hint {
+  border: var(--border-thick);
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  align-self: flex-start;
+}
+
+.stats-hint.normal {
+  background-color: var(--bento-blue); /* Neutraali sininen */
+}
+
+.stats-hint.level-up {
+  background-color: var(--bento-lime); /* Lime vain kun voi nostaa */
+}
+
+/* KAPEAT INPUTIT ILMAN NUOLIA */
+.input-row {
+  display: flex;
+  gap: 10px;
+}
+
+input {
+  width: 80px; /* Kapea */
+  padding: 12px;
+  border-radius: 12px;
+  border: var(--border-thick);
+  font-weight: 900;
+  background: white;
   text-align: center;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+input[type=number] {
+  -moz-appearance: textfield;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+/* TAB-NAPIT */
+.tab-bar {
+  display: flex;
+  gap: 10px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+.tab-bar button {
+  flex: 1;
+  background: white;
+  border: var(--border-thick);
+  padding: 12px;
+  border-radius: 50px;
+  font-weight: 900;
+  cursor: pointer;
 }
 
-.card {
-  padding: 2em;
+.tab-bar button.active {
+  background: var(--bento-yellow);
+  box-shadow: 2px 2px 0px #000000;
 }
 
-.read-the-docs {
-  color: #888;
+/* TALLENNUSNAPPI */
+.main-save-btn {
+  background-color: var(--bento-pink);
+  border: var(--border-thick);
+  padding: 22px;
+  border-radius: 50px;
+  font-weight: 900;
+  font-size: 1.2rem;
+  box-shadow: 4px 4px 0px #000000;
+  cursor: pointer;
 }
