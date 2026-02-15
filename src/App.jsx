@@ -1,25 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-// Linkki pysyy samana
 const API_URL = "https://script.google.com/macros/s/AKfycbx6rEF4pPdmxj1RTCKIuhGlx4rPdDFPkVivZo72-CCIp0B5m_sfexP7urP5uRKxM4HM/exec";
 
-// LISÄTTY 'historyAliases' -lista, joka kertoo mitä nimeä Sheetistä pitää etsiä
+// --- SANAKIRJA: Yhdistää sovelluksen nimet Excelin historiariveihin ---
+const EXERCISE_DICTIONARY = {
+  // JALAT
+  'Bulgarialainen askelkyykky': ['Smith Bulgarian', 'Bulgarian', 'Bulgarialainen', 'Askelkyykky'],
+  'Vaakaprässi': ['Vaakaprässi', 'Jalkaprässi – vaakaprässi'], // Löytää tarkan historiasi
+  '45-asteen prässi': ['45-asteen', '45 astetta', 'Jalkaprässi', 'Reisiprässi'], // Löytää yleiset prässit
+  'Hack-kyykky': ['Hack'],
+  'Reiden koukistus istuen': ['Reiden koukistus', 'Koukistus'],
+  'Reiden ojennus': ['Reiden ojennus', 'Ojennus'],
+  'Glute Drive': ['Glute Drive', 'Booty Builder', 'Lantionnosto', 'Lantionnostolaite'],
+
+  // YLÄKROPPA (TYÖNTÄVÄT)
+  'Arnold Press': ['Arnold', 'Pystypunnerrus'],
+  'Penkkipunnerrus kp': ['Penkkipunnerrus', 'Rintaprässi'],
+  'Vipunostot sivulle kp': ['Vipunostot', 'Sivuolkapää'],
+  'Push Down': ['Push Down', 'Ojentajat'], 
+
+  // YLÄKROPPA (VETÄVÄT)
+  'Ylätalja leveä ote': ['Lat Pulldown', 'Ylätalja'],
+  'Alasoutu leveä ote': ['Low Row', 'Alasoutu', 'Soutu', 'Kulmasoutu'],
+  'Face pull': ['Face pull', 'Facepull'],
+  'Hauiskääntö kp': ['Hauiskääntö']
+};
+
+// --- PÄIVITETYT TREENIT ---
 const WORKOUT_DATA = {
   A: [
     { 
       id: 'a1', 
       name: 'Bulgarialainen askelkyykky', 
       muscle: 'Etureidet', 
-      historyAliases: ['Smith Bulgarian Split Squat', 'Bulgarialainen'], // Nämä nimet Sheetissä
-      alternatives: ['Jalkaprässi', 'Hack-kyykky'], 
+      alternatives: ['Vaakaprässi', '45-asteen prässi', 'Hack-kyykky'], 
       targetReps: '8-10' 
     },
     { 
       id: 'a2', 
       name: 'Arnold Press', 
       muscle: 'Etolkapää', 
-      historyAliases: ['Arnold Press', 'Pystypunnerrus'], 
       alternatives: ['Pystypunnerruslaite', 'Punnerrus kp'], 
       targetReps: '10-12' 
     },
@@ -27,7 +48,6 @@ const WORKOUT_DATA = {
       id: 'a3', 
       name: 'Ylätalja leveä ote', 
       muscle: 'Yläselkä', 
-      historyAliases: ['Lat Pulldown', 'Ylätalja'], // Englanninkielinen nimi Sheetissä
       alternatives: ['Leuanvetolaite', 'Ylätalja kapea'], 
       targetReps: '10-12' 
     },
@@ -35,7 +55,6 @@ const WORKOUT_DATA = {
       id: 'a4', 
       name: 'Vipunostot sivulle kp', 
       muscle: 'Sivuolkapää', 
-      historyAliases: ['Vipunostot sivulle', 'Vipunostot'], // Sheetissä ei ole "kp" lopussa
       alternatives: ['Vipunostot laitteessa', 'Vipunostot taljassa'], 
       targetReps: '12-15' 
     },
@@ -43,7 +62,6 @@ const WORKOUT_DATA = {
       id: 'a5', 
       name: 'Reiden koukistus istuen', 
       muscle: 'Takareidet', 
-      historyAliases: ['Reiden koukistus', 'Reiden koukistus istuen'], 
       alternatives: ['Makaava koukistuslaite', 'SJMV kp'], 
       targetReps: '12-15' 
     }
@@ -53,7 +71,6 @@ const WORKOUT_DATA = {
       id: 'b1', 
       name: 'Glute Drive', 
       muscle: 'Pakarat', 
-      historyAliases: ['Booty Builder -laite', 'Glute Drive'], // Sheetissä oli Booty Builder
       alternatives: ['Lantionnostolaite', 'Kyykky leveä ote'], 
       targetReps: '8-10' 
     },
@@ -61,7 +78,6 @@ const WORKOUT_DATA = {
       id: 'b2', 
       name: 'Penkkipunnerrus kp', 
       muscle: 'Rinta', 
-      historyAliases: ['Penkkipunnerrus', 'Penkkipunnerrus kp'], 
       alternatives: ['Rintaprässilaite', 'Vinopenkkilaite'], 
       targetReps: '10-12' 
     },
@@ -69,7 +85,6 @@ const WORKOUT_DATA = {
       id: 'b3', 
       name: 'Alasoutu leveä ote', 
       muscle: 'Keskiselkä', 
-      historyAliases: ['Low Row (kaapeli)', 'Alasoutu'], // Englanninkielinen nimi Sheetissä
       alternatives: ['Soutulaite tuettu', 'Kulmasoutu tangolla'], 
       targetReps: '10-12' 
     },
@@ -77,7 +92,6 @@ const WORKOUT_DATA = {
       id: 'b4', 
       name: 'Face pull', 
       muscle: 'Takaolkapää', 
-      historyAliases: ['Face pull', 'Facepull'], 
       alternatives: ['Takaolkapäälaite', 'Vipunostot taakse'], 
       targetReps: '15-20' 
     },
@@ -85,8 +99,7 @@ const WORKOUT_DATA = {
       id: 'b5', 
       name: 'Reiden ojennus', 
       muscle: 'Etureidet', 
-      historyAliases: ['Reiden ojennus'], 
-      alternatives: ['Jalkaprässi', 'Kyykky kp'], 
+      alternatives: ['Vaakaprässi', 'Kyykky kp'], 
       targetReps: '12-15' 
     }
   ]
@@ -103,7 +116,7 @@ function App() {
     fetch(API_URL)
       .then(res => res.json())
       .then(data => {
-        console.log("Historia ladattu, rivimäärä:", data.length);
+        console.log("Historia ladattu:", data.length, "riviä");
         setSheetsHistory(data);
       })
       .catch(err => console.error("Historiavirhe:", err));
@@ -115,21 +128,23 @@ function App() {
     }
   }, [activeWorkout]);
 
-  // --- KORJATTU SUOSITUSLOGIIKKA ---
-  const getRecommendation = (currentName, historyAliases, target) => {
-    // 1. Luodaan lista kaikista nimistä, joilla tätä liikettä voi etsiä (nykyinen nimi + aliakset)
-    const searchTerms = [currentName, ...(historyAliases || [])].map(n => n.toLowerCase().trim());
+  // --- SUOSITUSLOGIIKKA (Nyt tukee SWAPia ja sumeita hakuja) ---
+  const getRecommendation = (currentName, target) => {
+    // 1. Haetaan sanakirjasta kaikki mahdolliset nimet tälle liikkeelle
+    // Jos sanakirjasta ei löydy, käytetään edes nykyistä nimeä
+    const aliases = EXERCISE_DICTIONARY[currentName] || [];
+    const searchTerms = [currentName, ...aliases].map(n => n.toLowerCase().trim());
 
-    // 2. Etsitään historiasta rivit, joissa liike täsmää johonkin näistä nimistä
+    // 2. Etsitään historiasta rivit, jotka SISÄLTÄVÄT jonkin hakusanoista
+    // Esim. haku "Jalkaprässi" löytää "Jalkaprässi – vaakaprässi"
     const relevantHistory = sheetsHistory.filter(h => {
-      const hName = (h.liike || h.exercisename || "").toLowerCase().trim();
-      return searchTerms.includes(hName);
+      const hName = (h.liike || h.exercisename || "").toLowerCase();
+      return searchTerms.some(term => hName.includes(term));
     });
 
     if (relevantHistory.length === 0) return { text: "Ei historiaa", status: 'normal' };
 
-    // 3. Otetaan viimeisin suoritus
-    // Oletus: API palauttaa aikajärjestyksessä (vanhin ensin), joten otetaan viimeinen
+    // 3. Otetaan viimeisin (oletetaan aikajärjestys, viimeinen on uusin)
     const last = relevantHistory[relevantHistory.length - 1]; 
     
     let maxWeightDone = 0;
@@ -152,7 +167,7 @@ function App() {
       }
     }
     
-    // Fallback vanhalle datalle (Koonti-välilehti)
+    // Fallback vanhalle datalle (Koonti)
     if (maxWeightDone === 0) {
       maxWeightDone = parseNum(last.paino || last.s1_weight);
       maxRepsDone = parseNum(last.toistot || last.s1_reps);
@@ -278,8 +293,7 @@ function App() {
 
       <main className="workout-list">
         {activeWorkout.exercises.map(ex => {
-          // VÄLITETÄÄN NYT MYÖS ALIAKSET SUOSITUSFUNKTIOLLE
-          const info = getRecommendation(ex.currentName, ex.historyAliases, ex.targetReps);
+          const info = getRecommendation(ex.currentName, ex.targetReps);
           return (
             <div key={ex.id} className="exercise-card">
               <div className="exercise-header">
