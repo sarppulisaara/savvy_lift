@@ -51,7 +51,7 @@ body {
   text-align: center;
   box-shadow: var(--shadow-flat);
   width: 100%;
-  transform: rotate(-1deg); /* TÄMÄ ON SE VINOUS! */
+  transform: rotate(-1deg);
 }
 
 .start-actions {
@@ -121,6 +121,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #000000;
 }
 .cancel-btn:active { transform: translate(3px, 3px); box-shadow: none; }
 
@@ -164,8 +165,10 @@ body {
   line-height: 1.1;
 }
 
+/* SWAP-NAPPI (Värit päivitetty) */
 .swap-action-btn {
   background: var(--bento-yellow);
+  color: #000000; /* Varmistetaan musta teksti */
   border: var(--border-thick);
   padding: 8px 12px;
   font-family: 'Space Grotesk', sans-serif;
@@ -204,7 +207,6 @@ body {
   width: 100%;
 }
 
-/* TÄSSÄ OLI VIRHE, NYT KORJATTU: Erotettu luokat toisistaan */
 .set-row-pill {
   display: flex;
   align-items: center;
@@ -212,8 +214,10 @@ body {
   width: 100%;
 }
 
+/* POISTA-NAPPI (Värit päivitetty) */
 .delete-set-btn {
-  background: #ff6b6b; /* Punainen varoitusväri */
+  background: var(--bento-pink); /* Nyt sama pinkki kuin muualla */
+  color: #000000; /* Musta rasti */
   border: var(--border-thick);
   border-radius: 8px;
   width: 30px;
@@ -223,7 +227,7 @@ body {
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  flex-shrink: 0; /* Estää nappia litistymästä */
+  flex-shrink: 0;
   box-shadow: 2px 2px 0px #000000;
   margin-left: 5px;
 }
@@ -253,6 +257,7 @@ input {
   text-align: center;
   font-size: 1.1rem;
   box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05);
+  color: #000000;
 }
 
 input:focus {
