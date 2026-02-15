@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-const API_URL = "https://script.google.com/macros/s/AKfycbx1uNomu1DL6bY8r19y8O487EpDVFwOe-nbl6G0-F2XYrPxx-zR-0BwU32qDtHU1vhI/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbyaHfMwPq7E3uI1HEMW8ELa_x_fLKLqM1NJdmNLaIs0rhduEWqtbpKJuFD51823bd4K/exec";
 
 const WORKOUT_DATA = {
   A: [
@@ -27,7 +27,6 @@ function App() {
   });
   const [sheetsHistory, setSheetsHistory] = useState([]);
 
-  // Lataa historia käynnistyksessä
   useEffect(() => {
     fetch(API_URL)
       .then(res => res.json())
@@ -35,14 +34,12 @@ function App() {
       .catch(err => console.error("Historiavirhe:", err));
   }, []);
 
-  // Automaattinen välitallennus localStorageen
   useEffect(() => {
     if (activeWorkout) {
       localStorage.setItem('active_workout', JSON.stringify(activeWorkout));
     }
   }, [activeWorkout]);
 
-  // Älykäs suosituslogiikka (etsii parhaan sarjan wide-format datasta)
   const getRecommendation = (name, target) => {
     const last = [...sheetsHistory].reverse().find(h => 
       h.liike?.toLowerCase().trim() === name.toLowerCase().trim() || 
@@ -55,7 +52,6 @@ function App() {
     let maxRepsDone = 0;
     const targetMax = parseInt(target.split('-').pop());
 
-    // Tarkistetaan sarakkeet s1-s5 (sekä vanhat 'paino'/'toistot' jos niitä on)
     for (let i = 1; i <= 5; i++) {
       const r = last[`s${i}_reps`];
       const w = last[`s${i}_weight`];
@@ -65,7 +61,6 @@ function App() {
       }
     }
     
-    // Fallback vanhalle datamuodolle
     if (maxWeightDone === 0) {
       maxWeightDone = Number(last.paino || 0);
       maxRepsDone = Number(last.toistot || 0);
@@ -127,7 +122,6 @@ function App() {
   const saveToSheets = async () => {
     if (!window.confirm("Tallennetaanko treeni Sheetsiin?")) return;
 
-    // Muunnetaan data Sheetsin wide-format muotoon (yksi rivi per liike)
     const payload = activeWorkout.exercises.map(ex => {
       const data = {
         Aikaleima: new Date().toLocaleString('fi-FI'),
@@ -138,7 +132,7 @@ function App() {
       };
       
       ex.sets.forEach((set, i) => {
-        if (i < 5) { // Sheets-sarakkeet s1-s5
+        if (i < 5) {
           data[`s${i+1}_reps`] = set.reps;
           data[`s${i+1}_weight`] = set.weight;
         }
@@ -177,7 +171,7 @@ function App() {
   return (
     <div className="container">
       <header className="header-card sticky-header">
-        <h1 className="glock-text">{activeWorkout.type}-TREENI</h1>
+        <h1 className="glock-text">{activeWorkout.type}</h1>
         <button className="cancel-btn" onClick={() => { if(confirm("Hylätäänkö treeni?")) { localStorage.removeItem('active_workout'); setActiveWorkout(null); }}}>✕</button>
       </header>
 
@@ -187,30 +181,38 @@ function App() {
           return (
             <div key={ex.id} className="exercise-card">
               <div className="exercise-header">
-                <h2 className="exercise-title">{ex.currentName}</h2>
+                <div style={{flex: 1}}>
+                  <span className="muscle-tag">{ex.muscle}</span>
+                  <h2 className="exercise-title">{ex.currentName}</h2>
+                </div>
                 <button className="swap-icon-btn" onClick={() => swapExercise(ex.id)}>🔄</button>
               </div>
+              
               <div className={`stats-hint ${info.status}`}>{info.text} | Tavoite: {ex.targetReps}</div>
               
-              {ex.sets.map((set, i) => (
-                <div key={i} className="set-row-pill">
-                  <span className="set-num">{i+1}.</span>
-                  <input 
-                    type="number" 
-                    inputMode="decimal"
-                    placeholder="kg" 
-                    value={set.weight} 
-                    onChange={e => updateSet(ex.id, i, 'weight', e.target.value)} 
-                  />
-                  <input 
-                    type="number" 
-                    inputMode="numeric"
-                    placeholder="reps" 
-                    value={set.reps} 
-                    onChange={e => updateSet(ex.id, i, 'reps', e.target.value)} 
-                  />
-                </div>
-              ))}
+              <div className="sets-container">
+                {ex.sets.map((set, i) => (
+                  <div key={i} className="set-row-pill">
+                    <span className="set-num">{i+1}.</span>
+                    <input 
+                      className="workout-input"
+                      type="number" 
+                      inputMode="decimal"
+                      placeholder="kg" 
+                      value={set.weight} 
+                      onChange={e => updateSet(ex.id, i, 'weight', e.target.value)} 
+                    />
+                    <input 
+                      className="workout-input"
+                      type="number" 
+                      inputMode="numeric"
+                      placeholder="reps" 
+                      value={set.reps} 
+                      onChange={e => updateSet(ex.id, i, 'reps', e.target.value)} 
+                    />
+                  </div>
+                ))}
+              </div>
               <button className="add-set-pill" onClick={() => addSet(ex.id)}>+ LISÄÄ SARJA</button>
             </div>
           );
