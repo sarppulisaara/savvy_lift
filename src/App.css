@@ -11,9 +11,9 @@ html, body { overflow-x: hidden; width: 100%; margin: 0; padding: 0; }
   --bento-blue: #c7e4ff;
   --bento-yellow: #f4ffb5;
   --text-dark: #000000;
-  --border-thick: 3px solid #000000; /* Hieman paksumpi reuna */
-  --shadow-flat: 5px 5px 0px #000000; /* Isompi varjo isoille elementeille */
-  --shadow-small: 3px 3px 0px #000000; /* Pienempi varjo napeille */
+  --border-thick: 3px solid #000000;
+  --shadow-flat: 5px 5px 0px #000000;
+  --shadow-small: 3px 3px 0px #000000;
 }
 
 body {
@@ -40,7 +40,7 @@ body {
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  gap: 40px; /* Enemmän tilaa logon ja nappien väliin */
+  gap: 40px;
 }
 
 .main-logo-box {
@@ -51,7 +51,7 @@ body {
   text-align: center;
   box-shadow: var(--shadow-flat);
   width: 100%;
-  transform: rotate(-1deg); /* Pieni kallistus */
+  transform: rotate(-1deg); /* TÄMÄ ON SE VINOUS! */
 }
 
 .start-actions {
@@ -61,7 +61,6 @@ body {
   width: 100%;
 }
 
-/* Etusivun isot valintanapit */
 .workout-select-btn {
   border: var(--border-thick);
   padding: 25px;
@@ -77,7 +76,6 @@ body {
   text-transform: uppercase;
 }
 
-/* Omat värit napeille */
 .a-btn { background-color: var(--bento-lime); }
 .b-btn { background-color: var(--bento-blue); }
 
@@ -166,9 +164,8 @@ body {
   line-height: 1.1;
 }
 
-/* SWAP-NAPPI (Korjattu tyyli) */
 .swap-action-btn {
-  background: var(--bento-yellow); /* Keltainen erottuu hyvin */
+  background: var(--bento-yellow);
   border: var(--border-thick);
   padding: 8px 12px;
   font-family: 'Space Grotesk', sans-serif;
@@ -196,7 +193,7 @@ body {
   line-height: 1.3;
   box-shadow: var(--shadow-small);
 }
-.stats-hint.normal { background-color: #e0e0e0; } /* Neutraalimpi harmaa */
+.stats-hint.normal { background-color: #e0e0e0; }
 .stats-hint.level-up { background-color: var(--bento-lime); }
 
 /* --- SARJARIVIT & SYÖTTÖKENTÄT --- */
@@ -207,11 +204,33 @@ body {
   width: 100%;
 }
 
+/* TÄSSÄ OLI VIRHE, NYT KORJATTU: Erotettu luokat toisistaan */
 .set-row-pill {
   display: flex;
   align-items: center;
   gap: 10px;
   width: 100%;
+}
+
+.delete-set-btn {
+  background: #ff6b6b; /* Punainen varoitusväri */
+  border: var(--border-thick);
+  border-radius: 8px;
+  width: 30px;
+  height: 30px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0; /* Estää nappia litistymästä */
+  box-shadow: 2px 2px 0px #000000;
+  margin-left: 5px;
+}
+
+.delete-set-btn:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
 }
 
 .set-num {
@@ -243,7 +262,6 @@ input:focus {
   transform: translate(-2px, -2px);
 }
 
-/* LISÄÄ SARJA -NAPPI */
 .add-set-pill {
   background-color: var(--bento-blue);
   border: var(--border-thick);

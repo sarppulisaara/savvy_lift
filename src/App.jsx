@@ -3,31 +3,29 @@ import './App.css';
 
 const API_URL = "https://script.google.com/macros/s/AKfycbx6rEF4pPdmxj1RTCKIuhGlx4rPdDFPkVivZo72-CCIp0B5m_sfexP7urP5uRKxM4HM/exec";
 
-// --- SANAKIRJA: Yhdistää sovelluksen nimet Excelin historiariveihin ---
+// --- SANAKIRJA ---
 const EXERCISE_DICTIONARY = {
   // JALAT
   'Bulgarialainen askelkyykky': ['Smith Bulgarian', 'Bulgarian', 'Bulgarialainen', 'Askelkyykky'],
-  'Vaakaprässi': ['Vaakaprässi', 'Jalkaprässi – vaakaprässi'], // Löytää tarkan historiasi
-  '45-asteen prässi': ['45-asteen', '45 astetta', 'Jalkaprässi', 'Reisiprässi'], // Löytää yleiset prässit
+  'Vaakaprässi': ['Vaakaprässi', 'Jalkaprässi – vaakaprässi'],
+  '45-asteen prässi': ['45-asteen', '45 astetta', 'Jalkaprässi', 'Reisiprässi'],
   'Hack-kyykky': ['Hack'],
   'Reiden koukistus istuen': ['Reiden koukistus', 'Koukistus'],
   'Reiden ojennus': ['Reiden ojennus', 'Ojennus'],
   'Glute Drive': ['Glute Drive', 'Booty Builder', 'Lantionnosto', 'Lantionnostolaite'],
 
-  // YLÄKROPPA (TYÖNTÄVÄT)
+  // YLÄKROPPA
   'Arnold Press': ['Arnold', 'Pystypunnerrus'],
   'Penkkipunnerrus kp': ['Penkkipunnerrus', 'Rintaprässi'],
   'Vipunostot sivulle kp': ['Vipunostot', 'Sivuolkapää'],
   'Push Down': ['Push Down', 'Ojentajat'], 
-
-  // YLÄKROPPA (VETÄVÄT)
   'Ylätalja leveä ote': ['Lat Pulldown', 'Ylätalja'],
   'Alasoutu leveä ote': ['Low Row', 'Alasoutu', 'Soutu', 'Kulmasoutu'],
   'Face pull': ['Face pull', 'Facepull'],
   'Hauiskääntö kp': ['Hauiskääntö']
 };
 
-// --- PÄIVITETYT TREENIT ---
+// --- TREENIT ---
 const WORKOUT_DATA = {
   A: [
     { 
@@ -128,15 +126,11 @@ function App() {
     }
   }, [activeWorkout]);
 
-  // --- SUOSITUSLOGIIKKA (Nyt tukee SWAPia ja sumeita hakuja) ---
+  // --- SUOSITUSLOGIIKKA ---
   const getRecommendation = (currentName, target) => {
-    // 1. Haetaan sanakirjasta kaikki mahdolliset nimet tälle liikkeelle
-    // Jos sanakirjasta ei löydy, käytetään edes nykyistä nimeä
     const aliases = EXERCISE_DICTIONARY[currentName] || [];
     const searchTerms = [currentName, ...aliases].map(n => n.toLowerCase().trim());
 
-    // 2. Etsitään historiasta rivit, jotka SISÄLTÄVÄT jonkin hakusanoista
-    // Esim. haku "Jalkaprässi" löytää "Jalkaprässi – vaakaprässi"
     const relevantHistory = sheetsHistory.filter(h => {
       const hName = (h.liike || h.exercisename || "").toLowerCase();
       return searchTerms.some(term => hName.includes(term));
@@ -144,20 +138,17 @@ function App() {
 
     if (relevantHistory.length === 0) return { text: "Ei historiaa", status: 'normal' };
 
-    // 3. Otetaan viimeisin (oletetaan aikajärjestys, viimeinen on uusin)
     const last = relevantHistory[relevantHistory.length - 1]; 
     
     let maxWeightDone = 0;
     let maxRepsDone = 0;
     const targetMax = parseInt(target.split('-').pop());
 
-    // Aputyökalu: Muuttaa "20,5" -> 20.5
     const parseNum = (val) => {
       if (!val) return 0;
       return Number(String(val).replace(',', '.'));
     };
 
-    // Tarkistetaan uuden datan s1-s5
     for (let i = 1; i <= 5; i++) {
       const r = parseNum(last[`s${i}_reps`]);
       const w = parseNum(last[`s${i}_weight`]);
@@ -167,7 +158,6 @@ function App() {
       }
     }
     
-    // Fallback vanhalle datalle (Koonti)
     if (maxWeightDone === 0) {
       maxWeightDone = parseNum(last.paino || last.s1_weight);
       maxRepsDone = parseNum(last.toistot || last.s1_reps);
@@ -198,6 +188,26 @@ function App() {
           sets: [...ex.sets, { weight: ex.sets[ex.sets.length-1].weight, reps: '' }] 
         } : ex
       )
+    }));
+  };
+
+  // UUSI: Poista sarja -toiminto
+  const deleteSet = (exId, setIndex) => {
+    setActiveWorkout(prev => ({
+      ...prev,
+      exercises: prev.exercises.map(ex => {
+        // Jos kyseessä oikea liike
+        if (ex.id === exId) {
+          // Estetään viimeisen sarjan poisto (aina vähintään 1 sarja)
+          if (ex.sets.length <= 1) return ex;
+          
+          return {
+            ...ex,
+            sets: ex.sets.filter((_, i) => i !== setIndex)
+          };
+        }
+        return ex;
+      })
     }));
   };
 
@@ -328,6 +338,17 @@ function App() {
                       value={set.reps} 
                       onChange={e => updateSet(ex.id, i, 'reps', e.target.value)} 
                     />
+                    
+                    {/* POISTA-NAPPI: Näkyy vain jos sarjoja on enemmän kuin 1 */}
+                    {ex.sets.length > 1 && (
+                      <button 
+                        className="delete-set-btn" 
+                        onClick={() => deleteSet(ex.id, i)}
+                        tabIndex="-1" // Estää tab-valinnan, jotta kirjoittaminen on sujuvaa
+                      >
+                        ✕
+                      </button>
+                    )}
                   </div>
                 ))}
               </div>
