@@ -3,115 +3,116 @@ import './App.css';
 
 const WORKOUT_DATA = {
   A: [
-    { id: 'a1', name: 'Bulgarialainen askelkyykky', alternatives: ['Askelkyykky kp', 'Jalkaprässi yhdellä jalalla'], reps: '8-10' },
-    { id: 'a2', name: 'Arnold press', alternatives: ['Pystypunnerrus kp', 'Pystypunnerrus tangolla'], reps: '10-12' },
-    { id: 'a3', name: 'Ylätalja leveä ote', alternatives: ['Leuanveto avustettuna', 'Kulmasoutu kp'], reps: '10-12' },
-    { id: 'a4', name: 'Vipunostot sivulle kp', alternatives: ['Vipunostot taljassa', 'Pystysoutu'], reps: '12-15' },
-    { id: 'a5', name: 'Reiden koukistus istuen', alternatives: ['Makaava reiden koukistus', 'SJMV kp'], reps: '12-15' }
+    { id: 'a1', name: 'Bulgarialainen askelkyykky', reps: '8-10' },
+    { id: 'a2', name: 'Arnold press', reps: '10-12' }
   ],
   B: [
-    { id: 'b1', name: 'Glute Drive', alternatives: ['Lantionnosto tangolla', 'Kyykky leveä ote'], reps: '8-10' },
-    { id: 'b2', name: 'Penkkipunnerrus kp', alternatives: ['Ristikkäistalja', 'Etunojapunnerrus'], reps: '10-12' },
-    { id: 'b3', name: 'Alasoutu leveä ote', alternatives: ['Yhden käden soutu kp', 'Kulmasoutu tangolla'], reps: '10-12' },
-    { id: 'b4', name: 'Face pull', alternatives: ['Takaolkapäät laitteessa', 'Vipunostot taakse'], reps: '15-20' },
-    { id: 'b5', name: 'Reiden ojennus', alternatives: ['Pakarapotku taljassa', 'Kyykky kp'], reps: '12-15' }
+    { id: 'b1', name: 'Glute Drive', reps: '8-10' },
+    { id: 'b2', name: 'Penkkipunnerrus kp', reps: '10-12' }
   ]
 };
 
 function App() {
-  const [currentTab, setCurrentTab] = useState('A');
-  const [exercises, setExercises] = useState(WORKOUT_DATA['A'].map(ex => ({...ex, currentName: ex.name})));
-  const [sheetsHistory, setSheetsHistory] = useState([]);
+  const [activeWorkout, setActiveWorkout] = useState(() => {
+    // [cite: 14, 23] Tallennus ja automaattinen sessiohallinta
+    const saved = localStorage.getItem('active_workout');
+    return saved ? JSON.parse(saved) : null;
+  });
 
+  // Tallenna heti kun tila muuttuu
   useEffect(() => {
-    fetch("https://script.google.com/macros/s/AKfycbxK9_ZncVDu9_R4FqzxbFv3S2Bpc9ot9q-abq5yCfF2UxajM-r3cTT9RuQjJLFbK7dY/exec")
-      .then(res => res.json())
-      .then(data => setSheetsHistory(data))
-      .catch(err => console.error("History error:", err));
-  }, []);
+    if (activeWorkout) {
+      localStorage.setItem('active_workout', JSON.stringify(activeWorkout));
+    }
+  }, [activeWorkout]);
 
-  const getHistoryForExercise = (exerciseName, targetReps) => {
-    const record = [...sheetsHistory].reverse().find(h => h.liike.toLowerCase().trim() === exerciseName.toLowerCase().trim());
-    if (!record) return { text: "Ei historiaa", status: 'normal' };
-    const targetNum = parseInt(targetReps.split('-').pop());
-    return record.toistot >= targetNum 
-      ? { text: `Uusi suositus: ${record.paino}kg x ${record.toistot}`, status: 'level-up' }
-      : { text: `Viimeksi: ${record.paino}kg x ${record.toistot}`, status: 'normal' };
+  const startWorkout = (type) => {
+    const initialExercises = WORKOUT_DATA[type].map(ex => ({
+      ...ex,
+      currentName: ex.name,
+      sets: [{ weight: '', reps: '' }] // [cite: 21, 28] Sarjapillerit ja data-logiikka
+    }));
+    setActiveWorkout({ type, exercises: initialExercises });
   };
 
-  const switchTab = (tab) => {
-    setCurrentTab(tab);
-    setExercises(WORKOUT_DATA[tab].map(ex => ({...ex, currentName: ex.name})));
-  };
-
-  const swapExercise = (id) => {
-    setExercises(prev => prev.map(ex => {
-      if (ex.id === id) {
-        const options = [ex.name, ...ex.alternatives];
-        const currentIdx = options.indexOf(ex.currentName);
-        const nextIdx = (currentIdx + 1) % options.length;
-        return { ...ex, currentName: options[nextIdx] };
-      }
-      return ex;
+  const addSet = (exId) => {
+    setActiveWorkout(prev => ({
+      ...prev,
+      exercises: prev.exercises.map(ex => 
+        ex.id === exId ? { ...ex, sets: [...ex.sets, { weight: '', reps: '' }] } : ex
+      )
     }));
   };
 
+  const updateSet = (exId, sIdx, field, val) => {
+    setActiveWorkout(prev => ({
+      ...prev,
+      exercises: prev.exercises.map(ex => 
+        ex.id === exId ? { 
+          ...ex, 
+          sets: ex.sets.map((s, i) => i === sIdx ? { ...s, [field]: val } : s) 
+        } : ex
+      )
+    }));
+  };
+
+  const clearWorkout = () => {
+    if(window.confirm("Hylätäänkö treeni?")) {
+      localStorage.removeItem('active_workout');
+      setActiveWorkout(null);
+    }
+  };
+
+  if (!activeWorkout) {
+    return (
+      <div className="container" style={{padding: '2rem', textAlign: 'center'}}>
+        <h1 className="glock-text">SAVVY LIFT</h1>
+        <button className="main-save-btn" onClick={() => startWorkout('A')}>ALOITA TREENI A</button>
+        <button className="main-save-btn" style={{marginTop: '1rem'}} onClick={() => startWorkout('B')}>ALOITA TREENI B</button>
+      </div>
+    );
+  }
+
   return (
     <div className="container">
-      <header className="header-card">
-        <h1 className="glock-text">SAVVY LIFT</h1>
+      <header className="header-card" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+        <h1 className="glock-text">TREENI {activeWorkout.type}</h1>
+        <button onClick={clearWorkout} style={{background: 'none', border: 'none', color: 'white', fontSize: '1.5rem'}}>✕</button>
       </header>
 
-      <nav className="tab-bar">
-  <button className={currentTab === 'A' ? 'active' : ''} onClick={() => switchTab('A')}>
-    TREENI A
-  </button>
-  <button className={currentTab === 'B' ? 'active' : ''} onClick={() => switchTab('B')}>
-    TREENI B
-  </button>
-</nav>
-
       <main className="workout-list">
-        {exercises.map((ex) => {
-          const historyInfo = getHistoryForExercise(ex.currentName, ex.reps);
-          return (
-            <div key={ex.id} className="exercise-card">
-              <div className="exercise-info">
-                <h2 className="exercise-title">{ex.currentName}</h2>
-                <button className="swap-icon-btn" onClick={() => swapExercise(ex.id)}>
-                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
-                  </svg>
-                </button>
+        {activeWorkout.exercises.map((ex) => (
+          <div key={ex.id} className="exercise-card">
+            <h2 className="exercise-title">{ex.currentName}</h2>
+            {ex.sets.map((set, i) => (
+              <div key={i} style={{display: 'flex', gap: '10px', marginBottom: '8px', alignItems: 'center'}}>
+                <span style={{width: '20px'}}>{i+1}.</span>
+                <input 
+                  type="number" 
+                  placeholder="kg" 
+                  value={set.weight}
+                  onChange={e => updateSet(ex.id, i, 'weight', e.target.value)}
+                  style={{flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #ccc'}}
+                />
+                <input 
+                  type="number" 
+                  placeholder="reps" 
+                  value={set.reps}
+                  onChange={e => updateSet(ex.id, i, 'reps', e.target.value)}
+                  style={{flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #ccc'}}
+                />
               </div>
-              <div className={`stats-hint ${historyInfo.status}`}>
-                {historyInfo.text} | Tavoite: {ex.reps}
-              </div>
-              <div className="input-row">
-                <div className="input-wrap">
-                  <input 
-                    type="number" 
-                    step="0" 
-                    inputMode="decimal" 
-                    placeholder="0.0" 
-                    onChange={e => ex.inputWeight = e.target.value}
-                  />
-                </div>
-                <div className="input-wrap">
-                  <input 
-                    type="number" 
-                    inputMode="numeric" 
-                    placeholder="0" 
-                    onChange={e => ex.inputReps = e.target.value}
-                  />
-                </div>
-              </div>
-            </div>
-          );
-        })}
+            ))}
+            <button onClick={() => addSet(ex.id)} className="add-set-btn">+ LISÄÄ SARJA</button>
+          </div>
+        ))}
       </main>
 
-      <button className="main-save-btn" onClick={() => alert("Tallennetaan...")}>TALLENNA TREENI</button>
+      <div style={{marginTop: '20px', padding: '10px', background: '#f0f0f0', borderRadius: '8px', fontSize: '10px'}}>
+        <strong>Debug (LocalStorage):</strong> {activeWorkout ? "Tallennettu muistiin" : "Tyhjä"}
+      </div>
+
+      <button className="main-save-btn" onClick={() => alert("Tähän myöhemmin Sheets-tallennus")}>TALLENNA TREENI</button>
     </div>
   );
 }
