@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@900&family=Inter:wght@400;700;900&display=swap');
 
-/* PERUSASETUKSET & iPHONE-FIXIT */
+/* --- PERUSASETUKSET & NEUBRUTALISM-MUUTTUJAT --- */
 * { box-sizing: border-box; }
 html, body { overflow-x: hidden; width: 100%; margin: 0; padding: 0; }
 
@@ -11,9 +11,9 @@ html, body { overflow-x: hidden; width: 100%; margin: 0; padding: 0; }
   --bento-blue: #c7e4ff;
   --bento-yellow: #f4ffb5;
   --text-dark: #000000;
-  --border-thick: 2px solid #000000;
-  --shadow-flat: 4px 4px 0px #000000;
-  --shadow-small: 2px 2px 0px #000000;
+  --border-thick: 3px solid #000000; /* Hieman paksumpi reuna */
+  --shadow-flat: 5px 5px 0px #000000; /* Isompi varjo isoille elementeille */
+  --shadow-small: 3px 3px 0px #000000; /* Pienempi varjo napeille */
 }
 
 body {
@@ -28,57 +28,115 @@ body {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 25px;
   margin: 0 auto;
   min-height: 100vh;
 }
 
-/* ETUSIVUN KESKITYS */
-.container.center {
+/* --- ETUSIVUN TYYLIT --- */
+.center-view {
+  display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+  min-height: 100vh;
+  gap: 40px; /* Enemmän tilaa logon ja nappien väliin */
 }
 
-/* KESKITETTY HEADER */
-.header-card {
+.main-logo-box {
   background-color: var(--bento-pink);
-  padding: 25px;
+  padding: 30px;
   border-radius: 24px;
   border: var(--border-thick);
   text-align: center;
   box-shadow: var(--shadow-flat);
+  width: 100%;
+  transform: rotate(-1deg); /* Pieni kallistus */
+}
+
+.start-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+/* Etusivun isot valintanapit */
+.workout-select-btn {
+  border: var(--border-thick);
+  padding: 25px;
+  border-radius: 20px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 900;
+  font-size: 1.6rem;
+  box-shadow: var(--shadow-flat);
+  cursor: pointer;
+  color: var(--text-dark);
+  transition: all 0.1s ease;
+  width: 100%;
+  text-transform: uppercase;
+}
+
+/* Omat värit napeille */
+.a-btn { background-color: var(--bento-lime); }
+.b-btn { background-color: var(--bento-blue); }
+
+.workout-select-btn:active {
+  transform: translate(5px, 5px);
+  box-shadow: none;
+}
+
+/* --- HEADER (Treeninäkymä) --- */
+.header-card {
+  background-color: var(--bento-pink);
+  padding: 20px 25px;
+  border-radius: 24px;
+  border: var(--border-thick);
+  text-align: center;
+  box-shadow: var(--shadow-small);
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
 }
 
-.sticky-header {
-  position: sticky;
-  top: 10px;
-  z-index: 100;
-}
+.no-sticky { position: relative; }
 
 .glock-text {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 900;
   font-size: 2rem;
   margin: 0;
-  color: #000000 !important;
   flex: 1;
 }
 
-/* HARJOITUSKORTTI */
+.cancel-btn {
+  background: white;
+  border: var(--border-thick);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  font-weight: 900;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: var(--shadow-small);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cancel-btn:active { transform: translate(3px, 3px); box-shadow: none; }
+
+/* --- HARJOITUSKORTTI --- */
 .exercise-card {
   background-color: white;
   border-radius: 24px;
   padding: 22px;
   border: var(--border-thick);
-  box-shadow: var(--shadow-flat);
+  box-shadow: var(--shadow-small);
   display: flex;
   flex-direction: column;
   gap: 15px;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
 }
 
 .exercise-header {
@@ -90,154 +148,136 @@ body {
 .muscle-tag {
   background: var(--bento-blue);
   border: var(--border-thick);
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 0.7rem;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 0.75rem;
   font-weight: 900;
   text-transform: uppercase;
   display: inline-block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
+  box-shadow: 2px 2px 0px #000000;
 }
 
 .exercise-title {
   font-family: 'Space Grotesk', sans-serif;
   font-weight: 900;
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   margin: 0;
-  color: #000000 !important;
+  line-height: 1.1;
 }
 
-/* SE PINKKI SWAP-NAPPI */
-.swap-icon-btn {
-  background: var(--bento-pink);
-  border: var(--border-thick);
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: var(--shadow-small);
-}
-
-/* SUOSITUKSET & HISTORIA */
-.stats-hint {
+/* SWAP-NAPPI (Korjattu tyyli) */
+.swap-action-btn {
+  background: var(--bento-yellow); /* Keltainen erottuu hyvin */
   border: var(--border-thick);
   padding: 8px 12px;
-  border-radius: 12px;
-  font-weight: 800;
+  font-family: 'Space Grotesk', sans-serif;
   font-size: 0.8rem;
-  align-self: flex-start;
-  color: #000000 !important;
-  line-height: 1.2;
+  font-weight: 900;
+  border-radius: 10px;
+  box-shadow: var(--shadow-small);
+  cursor: pointer;
+  transition: all 0.1s ease;
 }
 
-.stats-hint.normal { background-color: var(--bento-blue); }
+.swap-action-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+
+/* --- SUOSITUKSET & HISTORIA --- */
+.stats-hint {
+  border: var(--border-thick);
+  padding: 10px 15px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  align-self: flex-start;
+  line-height: 1.3;
+  box-shadow: var(--shadow-small);
+}
+.stats-hint.normal { background-color: #e0e0e0; } /* Neutraalimpi harmaa */
 .stats-hint.level-up { background-color: var(--bento-lime); }
 
-/* DYNAAMISET SARJARIVIT - FIKSATTU FLEX */
+/* --- SARJARIVIT & SYÖTTÖKENTÄT --- */
+.sets-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
 .set-row-pill {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 0;
   width: 100%;
 }
 
 .set-num {
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 900;
-  font-size: 0.9rem;
-  width: 25px;
+  font-size: 1rem;
+  width: 30px;
   flex-shrink: 0;
 }
 
 input {
   flex: 1;
-  min-width: 0; /* Estää laatikkoa karkaamasta reunan yli */
-  padding: 12px;
-  border-radius: 12px;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 14px;
   border: var(--border-thick);
   font-weight: 900;
+  font-family: 'Space Grotesk', sans-serif;
   background: white;
   text-align: center;
-  color: #000000 !important;
-  font-size: 1rem;
+  font-size: 1.1rem;
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.05);
 }
 
 input:focus {
   outline: none;
   background-color: var(--bento-yellow);
+  box-shadow: var(--shadow-small);
+  transform: translate(-2px, -2px);
 }
 
 /* LISÄÄ SARJA -NAPPI */
 .add-set-pill {
-  background-color: var(--bento-yellow);
+  background-color: var(--bento-blue);
   border: var(--border-thick);
-  padding: 10px;
-  border-radius: 12px;
+  padding: 14px;
+  border-radius: 16px;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 900;
-  font-size: 0.8rem;
+  font-size: 0.9rem;
   cursor: pointer;
   box-shadow: var(--shadow-small);
   margin-top: 5px;
   width: 100%;
+  transition: all 0.1s ease;
 }
+.add-set-pill:active { transform: translate(3px, 3px); box-shadow: none; }
 
-/* TREENI A / B VALINTA ALUSSA */
-.start-actions {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 20px;
-  width: 100%;
-}
-
-/* PÄÄNAPPI (Tallenna / Aloita) */
+/* --- ALAREUNAN TALLENNA-NAPPI --- */
 .main-save-btn {
   background-color: var(--bento-lime);
   border: var(--border-thick);
   padding: 22px;
   border-radius: 50px;
+  font-family: 'Space Grotesk', sans-serif;
   font-weight: 900;
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   box-shadow: var(--shadow-flat);
   cursor: pointer;
-  color: #000000 !important;
-  margin-top: 20px;
   width: 100%;
+  text-transform: uppercase;
+  transition: all 0.1s ease;
+  margin-bottom: 20px;
 }
+.main-save-btn:active { transform: translate(5px, 5px); box-shadow: none; }
 
-.main-save-btn.bento-blue-btn {
-  background-color: var(--bento-blue) !important;
-}
-
-.main-save-btn:active {
-  transform: translate(2px, 2px);
-  box-shadow: none;
-}
-
-.cancel-btn {
-  background: white;
-  border: var(--border-thick);
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  font-weight: 900;
-  cursor: pointer;
-  box-shadow: var(--shadow-small);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* INPUT FIXIT */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-input[type=number] {
-  -moz-appearance: textfield;
-  appearance: none;
-}
+/* Fixit numero-inputeille */
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; appearance: none; }
