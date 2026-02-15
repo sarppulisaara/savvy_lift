@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './App.css';
 
-const API_URL = "https://script.google.com/macros/s/AKfycbyaHfMwPq7E3uI1HEMW8ELa_x_fLKLqM1NJdmNLaIs0rhduEWqtbpKJuFD51823bd4K/exec";
+// PÄIVITETTY LINKKI
+const API_URL = "https://script.google.com/macros/s/AKfycbx6rEF4pPdmxj1RTCKIuhGlx4rPdDFPkVivZo72-CCIp0B5m_sfexP7urP5uRKxM4HM/exec";
 
 const WORKOUT_DATA = {
   A: [
@@ -27,23 +28,30 @@ function App() {
   });
   const [sheetsHistory, setSheetsHistory] = useState([]);
 
+  // Lataa historia käynnistyksessä
   useEffect(() => {
     fetch(API_URL)
       .then(res => res.json())
-      .then(data => setSheetsHistory(data))
+      .then(data => {
+        console.log("Ladattu historia:", data);
+        setSheetsHistory(data);
+      })
       .catch(err => console.error("Historiavirhe:", err));
   }, []);
 
+  // Automaattinen välitallennus
   useEffect(() => {
     if (activeWorkout) {
       localStorage.setItem('active_workout', JSON.stringify(activeWorkout));
     }
   }, [activeWorkout]);
 
+  // Älykäs suosituslogiikka
   const getRecommendation = (name, target) => {
+    // Etsitään historiasta joko exercisename tai liike (vanha data)
     const last = [...sheetsHistory].reverse().find(h => 
-      h.liike?.toLowerCase().trim() === name.toLowerCase().trim() || 
-      h.exercisename?.toLowerCase().trim() === name.toLowerCase().trim()
+      (h.liike && h.liike.toLowerCase().trim() === name.toLowerCase().trim()) || 
+      (h.exercisename && h.exercisename.toLowerCase().trim() === name.toLowerCase().trim())
     );
     
     if (!last) return { text: "Ei historiaa", status: 'normal' };
@@ -52,6 +60,7 @@ function App() {
     let maxRepsDone = 0;
     const targetMax = parseInt(target.split('-').pop());
 
+    // Tarkistetaan uuden datan s1-s5 (jos löytyy)
     for (let i = 1; i <= 5; i++) {
       const r = last[`s${i}_reps`];
       const w = last[`s${i}_weight`];
@@ -61,10 +70,13 @@ function App() {
       }
     }
     
+    // Fallback vanhalle datalle (Koonti-välilehti)
     if (maxWeightDone === 0) {
-      maxWeightDone = Number(last.paino || 0);
-      maxRepsDone = Number(last.toistot || 0);
+      maxWeightDone = Number(last.paino || last.s1_weight || 0);
+      maxRepsDone = Number(last.toistot || last.s1_reps || 0);
     }
+
+    if (maxWeightDone === 0) return { text: "Viimeksi: -", status: 'normal' };
 
     return maxRepsDone >= targetMax 
       ? { text: `Suositus: ${maxWeightDone + 2.5}kg (Viimeksi ${maxWeightDone}kg x ${maxRepsDone})`, status: 'level-up' }
@@ -156,22 +168,31 @@ function App() {
     }
   };
 
+  // --- ETUSIVUN NÄKYMÄ ---
   if (!activeWorkout) {
     return (
-      <div className="container center">
-        <h1 className="glock-text">SAVVY LIFT</h1>
+      <div className="container center center-view">
+        <div className="header-card main-logo-box">
+          <h1 className="glock-text">SAVVY LIFT</h1>
+        </div>
+        
         <div className="start-actions">
-          <button className="main-save-btn" onClick={() => startWorkout('A')}>TREENI A</button>
-          <button className="main-save-btn" onClick={() => startWorkout('B')} style={{marginTop: '1rem'}}>TREENI B</button>
+          <button className="workout-select-btn" onClick={() => startWorkout('A')}>
+            TREENI A
+          </button>
+          <button className="workout-select-btn bento-blue-btn" onClick={() => startWorkout('B')}>
+            TREENI B
+          </button>
         </div>
       </div>
     );
   }
 
+  // --- TREENINÄKYMÄ ---
   return (
     <div className="container">
-      <header className="header-card sticky-header">
-        <h1 className="glock-text">{activeWorkout.type}</h1>
+      <header className="header-card no-sticky">
+        <h1 className="glock-text">{activeWorkout.type}-TREENI</h1>
         <button className="cancel-btn" onClick={() => { if(confirm("Hylätäänkö treeni?")) { localStorage.removeItem('active_workout'); setActiveWorkout(null); }}}>✕</button>
       </header>
 
@@ -185,10 +206,12 @@ function App() {
                   <span className="muscle-tag">{ex.muscle}</span>
                   <h2 className="exercise-title">{ex.currentName}</h2>
                 </div>
-                <button className="swap-icon-btn" onClick={() => swapExercise(ex.id)}>🔄</button>
+                <button className="swap-action-btn" onClick={() => swapExercise(ex.id)}>
+                   SWAP
+                </button>
               </div>
               
-              <div className={`stats-hint ${info.status}`}>{info.text} | Tavoite: {ex.targetReps}</div>
+              <div className={`stats-hint ${info.status}`}>{info.text}</div>
               
               <div className="sets-container">
                 {ex.sets.map((set, i) => (
