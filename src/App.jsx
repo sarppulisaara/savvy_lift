@@ -46,7 +46,7 @@ function App() {
   });
   const [sheetsHistory, setSheetsHistory] = useState([]);
   
-  const API_URL = "https://script.google.com/macros/s/AKfycbxhmF1_C5q6intFIBvECvYKH6D1-u_UmYBrotic-ggWWDu99IWVYhle8ArlJJB4XhfR/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbxFLUXUhPiNo3uUfXcMmrGrKmMoIAxc26hoBEtg4bSa1GtszIwlKLbCrQgwpG62wGnV/exec"; 
 
   useEffect(() => {
     fetch(API_URL)
