@@ -11,7 +11,7 @@ const EXERCISE_DICTIONARY = {
   'Hammer Curl': ['Hauis'],
   'Reiden loitonnus (abductor)': ['Abductor'],
   'Vatsarutistus laitteessa': ['Vatsat'],
-  'Glute Drive': ['Booty Builder'],
+  'Glute Drive': ['Booty Builder', 'Lantionnosto'],
   'Reiden ojennus': ['Ojennus'],
   'Reiden koukistus': ['Koukistus'],
   'Push Down': ['Ojentajat'],
@@ -24,18 +24,18 @@ const WORKOUT_DATA = {
     { id: 'a2', name: 'Arnold Press', muscle: 'Etolkapää', alternatives: ['Pystypunnerrus laitteessa'], targetReps: '10-12', increment: 1.0 },
     { id: 'a3', name: 'Lat Pulldown', muscle: 'Yläselkä', alternatives: ['Leuanvetolaite'], targetReps: '10-12', increment: 2.5 },
     { id: 'a4', name: 'Chest Press (laite)', muscle: 'Rinta', alternatives: ['Vinopenkki laitteessa'], targetReps: '10-12', increment: 2.5 },
-    { id: 'a5', name: 'Vipunostot sivulle', muscle: 'Sivuolkapää', alternatives: ['Vipunostot taljassa'], targetReps: '12-15', increment: 0.5 },
+    { id: 'a5', name: 'Reiden ojennus', muscle: 'Etureidet', alternatives: ['Askelkyykky kp'], targetReps: '12-15', increment: 2.5 },
     { id: 'a6', name: 'Reiden koukistus', muscle: 'Takareidet', alternatives: ['SJMV kp'], targetReps: '12-15', increment: 2.5 },
-    { id: 'a7', name: 'Hammer Curl', muscle: 'Hauis', alternatives: ['Hauis taljassa'], targetReps: '10-12', increment: 1.0 },
-    { id: 'a8', name: 'Reiden loitonnus (abductor)', muscle: 'Lantio', alternatives: ['Reiden lähennys (adductor)'], targetReps: '12-15', increment: 5.0 }
+    { id: 'a7', name: 'Reiden loitonnus (abductor)', muscle: 'Lantio', alternatives: ['Reiden lähennys (adductor)'], targetReps: '12-15', increment: 5.0 }
   ],
   B: [
-    { id: 'b1', name: 'Glute Drive', muscle: 'Pakarat', alternatives: ['Booty Builder -laite'], targetReps: '8-10', increment: 5.0 },
+    { id: 'b1', name: 'Glute Drive', muscle: 'Pakarat', alternatives: ['Lantionnosto kp/tanko'], targetReps: '8-10', increment: 5.0 },
     { id: 'b2', name: 'Jalkaprässi (pystysuora / 45°)', muscle: 'Etureidet', alternatives: ['Jalkaprässi – vaakaprässi'], targetReps: '10-12', increment: 5.0 },
     { id: 'b3', name: 'Vertical Row', muscle: 'Selkä', alternatives: ['Low Row (kaapeli)'], targetReps: '10-12', increment: 2.5 },
-    { id: 'b4', name: 'Reiden ojennus', muscle: 'Etureidet', alternatives: ['Askelkyykky kp'], targetReps: '12-15', increment: 2.5 },
-    { id: 'b5', name: 'Push Down', muscle: 'Ojentajat', alternatives: ['Pec Deck'], targetReps: '12-15', increment: 2.5 },
-    { id: 'b6', name: 'Vatsarutistus laitteessa', muscle: 'Core', alternatives: ['Lankku'], targetReps: '15-20', increment: 2.5 }
+    { id: 'b4', name: 'Vipunostot sivulle', muscle: 'Sivuolkapää', alternatives: ['Vipunostot taljassa'], targetReps: '12-15', increment: 0.5 },
+    { id: 'b5', name: 'Hammer Curl', muscle: 'Hauis', alternatives: ['Hauis taljassa'], targetReps: '10-12', increment: 1.0 },
+    { id: 'b6', name: 'Push Down', muscle: 'Ojentajat', alternatives: ['Pec Deck'], targetReps: '12-15', increment: 2.5 },
+    { id: 'b7', name: 'Vatsarutistus laitteessa', muscle: 'Core', alternatives: ['Lankku'], targetReps: '15-20', increment: 2.5 }
   ]
 };
 
@@ -70,18 +70,14 @@ function App() {
     const searchTerms = [name, ...aliases].map(n => n.toLowerCase().trim());
 
     const relevant = sheetsHistory.filter(h => {
-      // Normalisoidaan Sheets-data: etsitään arvoa kaikista mahdollisista sarakkeista
       const rawName = h.Liike || h.liike || h.exercisename || h.Harjoitus || "";
       const hName = String(rawName).toLowerCase().trim();
-      
-      const match = searchTerms.some(term => hName === term || hName.includes(term));
-      return match;
+      return searchTerms.some(term => hName === term || hName.includes(term));
     });
 
     if (relevant.length === 0) return { text: "Ei historiaa", status: 'normal' };
     const last = relevant[relevant.length - 1]; 
     
-    // Yritetään löytää paino ja toistot eri sarakevaihtoehdoista
     const w = parseNum(last.Paino || last.paino || last.s1_weight || last.Weight);
     const r = parseNum(last.Toistot || last.toistot || last.s1_reps || last.Reps);
     
@@ -93,7 +89,6 @@ function App() {
       : { text: `Viimeksi: ${w}kg x ${r}`, status: 'normal' };
   };
 
-  // ... (muu koodi pysyy samana, startWorkout jne.)
   const startWorkout = (type) => {
     setActiveWorkout({ type, exercises: WORKOUT_DATA[type].map(ex => ({ ...ex, currentName: ex.name, sets: [{ weight: '', reps: '' }] })), startTime: new Date().toLocaleString('fi-FI') });
   };
