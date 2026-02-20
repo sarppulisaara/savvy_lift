@@ -67,10 +67,7 @@ const WORKOUT_DATA = {
 };
 
 function App() {
-  const [activeWorkout, setActiveWorkout] = useState(() => {
-    const saved = localStorage.getItem('active_workout');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [activeWorkout, setActiveWorkout] = useState(null);
   const [sheetsHistory, setSheetsHistory] = useState([]);
   
   const API_URL = "https://script.google.com/macros/s/AKfycbxhmF1_C5q6intFIBvECvYKH6D1-u_UmYBrotic-ggWWDu99IWVYhle8ArlJJB4XhfR/exec"; 
@@ -110,18 +107,20 @@ function App() {
   if (!activeWorkout) {
     return (
       <div className="container center-view">
-        <h1 className="glock-text">SAVVY LIFT</h1>
+        {/* TÄMÄ DIVI TARVITAAN: Se tekee sen pinkin laatikon tekstin ympärille */}
+        <div className="main-logo-box">
+          <h1 className="glock-text savvy-logo">SAVVY LIFT</h1>
+        </div>
+        
         <div className="start-actions">
-          {['A', 'B', 'C', 'D'].map(type => (
-            <button key={type} className={`workout-select-btn ${type.toLowerCase()}-btn`} onClick={() => startWorkout(type)}>
-              {type}
-            </button>
-          ))}
+          <button className="workout-select-btn a-btn" onClick={() => startWorkout('A')}>TREENI A</button>
+          <button className="workout-select-btn b-btn" onClick={() => startWorkout('B')}>TREENI B</button>
+          <button className="workout-select-btn c-btn" onClick={() => startWorkout('C')}>TREENI C</button>
+          <button className="workout-select-btn d-btn" onClick={() => startWorkout('D')}>TREENI D</button>
         </div>
       </div>
     );
   }
-
   return (
     <div className="container">
       <header className="header-card">
@@ -169,18 +168,27 @@ function App() {
       </main>
       <button className="main-save-btn" onClick={async () => {
         if (!window.confirm("Tallennetaanko?")) return;
-        const payload = activeWorkout.exercises.map(ex => ({
-          Aikaleima: new Date().toLocaleDateString('fi-FI') + " " + new Date().toLocaleTimeString('fi-FI', {hour: '2-digit', minute:'2-digit'}),
-          workoutType: activeWorkout.type, 
-          musclegroup: ex.muscle, 
-          exercisename: ex.currentName,
-          s1_reps: ex.sets[0].reps ? "'" + ex.sets[0].reps : "",
-          s1_weight: ex.sets[0].weight ? "'" + ex.sets[0].weight : ""
-        }));
+        const payload = activeWorkout.exercises.map(ex => {
+            const d = {
+                Aikaleima: new Date().toLocaleDateString('fi-FI') + " " + new Date().toLocaleTimeString('fi-FI', {hour: '2-digit', minute:'2-digit'}),
+                workoutType: activeWorkout.type, 
+                musclegroup: ex.muscle, 
+                exercisename: ex.currentName,
+                s1_reps: ex.sets[0]?.reps ? "'" + ex.sets[0].reps : "",
+                s1_weight: ex.sets[0]?.weight ? "'" + ex.sets[0].weight : ""
+            };
+            ex.sets.forEach((s, i) => {
+                if (i < 5) {
+                    d[`s${i+1}_reps`] = s.reps ? "'" + s.reps : "";
+                    d[`s${i+1}_weight`] = s.weight ? "'" + s.weight : "";
+                }
+            });
+            return d;
+        });
         try {
           await fetch(API_URL, { method: "POST", mode: 'no-cors', body: JSON.stringify(payload) });
           alert("Tallennettu!"); setActiveWorkout(null);
-        } catch (e) { alert("Virhe."); }
+        } catch (e) { alert("Virhe tallennuksessa."); }
       }}>TALLENNA TREENI</button>
     </div>
   );
