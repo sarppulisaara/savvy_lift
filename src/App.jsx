@@ -47,7 +47,7 @@ function App() {
   const [sheetsHistory, setSheetsHistory] = useState([]);
   
   // TÄRKEÄÄ: Pasteaa tähän se sun Apps Script URL (esim. https://script.google.com/...)
-  const API_URL = "LAITA_SE_SUN_OMA_LINKKI_TÄHÄN"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbxhmF1_C5q6intFIBvECvYKH6D1-u_UmYBrotic-ggWWDu99IWVYhle8ArlJJB4XhfR/exec"; 
 
   useEffect(() => {
     fetch(API_URL).then(res => res.json()).then(data => setSheetsHistory(data)).catch(err => console.error(err));
