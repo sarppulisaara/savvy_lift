@@ -2,16 +2,16 @@ import React, { useState, useEffect } from 'react';
 import './App.css'; 
 
 const EXERCISE_DICTIONARY = {
-  'Smith Bulgarian Split Squat': ['Bulgarialainen', 'Bulgarian'],
+  'Smith Bulgarian Split Squat': ['Bulgarialainen', 'Bulgarian', 'Bulgarialainen askelkyykky'],
   'Jalkaprässi – vaakaprässi': ['Vaakaprässi'],
-  'Jalkaprässi (pystysuora / 45°)': ['45-asteen prässi', '45 astetta'],
-  'Vertical Row': ['Alasoutu', 'Low Row', 'Soutulaite'],
-  'Chest Press (laite)': ['Penkkipunnerrus', 'Chest Press'],
+  'Jalkaprässi (pystysuora / 45°)': ['45-asteen prässi'],
+  'Vertical Row': ['Alasoutu', 'Low Row'],
+  'Chest Press (laite)': ['Penkkipunnerrus'],
   'Arnold Press': ['Arnold'],
-  'Hammer Curl': ['Hauiskääntö', 'Hauis'],
-  'Reiden loitonnus (abductor)': ['Abductor', 'Loitonnus'],
+  'Hammer Curl': ['Hauis'],
+  'Reiden loitonnus (abductor)': ['Abductor'],
   'Vatsarutistus laitteessa': ['Vatsat'],
-  'Glute Drive': ['Booty Builder -laite', 'Lantionnosto'],
+  'Glute Drive': ['Booty Builder'],
   'Reiden ojennus': ['Ojennus'],
   'Reiden koukistus': ['Koukistus'],
   'Push Down': ['Ojentajat'],
@@ -46,16 +46,18 @@ function App() {
   });
   const [sheetsHistory, setSheetsHistory] = useState([]);
   
-  // TÄRKEÄÄ: Pasteaa tähän se sun Apps Script URL (esim. https://script.google.com/...)
   const API_URL = "https://script.google.com/macros/s/AKfycbxhmF1_C5q6intFIBvECvYKH6D1-u_UmYBrotic-ggWWDu99IWVYhle8ArlJJB4XhfR/exec"; 
 
   useEffect(() => {
-    fetch(API_URL).then(res => res.json()).then(data => setSheetsHistory(data)).catch(err => console.error(err));
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => {
+        console.log("Datan haku onnistui. Rivejä haettu:", data.length);
+        if (data.length > 0) console.log("Esimerkkirivi historiasta:", data[data.length - 1]);
+        setSheetsHistory(data);
+      })
+      .catch(err => console.error("HISTORIAVIRHE:", err));
   }, []);
-
-  useEffect(() => {
-    if (activeWorkout) localStorage.setItem('active_workout', JSON.stringify(activeWorkout));
-  }, [activeWorkout]);
 
   const parseNum = (val) => {
     if (!val) return 0;
@@ -63,69 +65,37 @@ function App() {
     return isNaN(n) ? 0 : n;
   };
 
-  const getRecommendation = (currentName, targetRange, exerciseObj) => {
-    const aliases = EXERCISE_DICTIONARY[currentName] || [];
-    const searchTerms = [currentName, ...aliases].map(n => n.toLowerCase().trim());
-    const relevantHistory = sheetsHistory.filter(h => {
-      const hName = (h.Liike || h.liike || h.exercisename || "").toLowerCase().trim();
-      return searchTerms.some(term => hName === term);
+  const getRecommendation = (name, range, obj) => {
+    const aliases = EXERCISE_DICTIONARY[name] || [];
+    const searchTerms = [name, ...aliases].map(n => n.toLowerCase().trim());
+
+    const relevant = sheetsHistory.filter(h => {
+      // Normalisoidaan Sheets-data: etsitään arvoa kaikista mahdollisista sarakkeista
+      const rawName = h.Liike || h.liike || h.exercisename || h.Harjoitus || "";
+      const hName = String(rawName).toLowerCase().trim();
+      
+      const match = searchTerms.some(term => hName === term || hName.includes(term));
+      return match;
     });
-    if (relevantHistory.length === 0) return { text: "Ei historiaa", status: 'normal' };
-    const last = relevantHistory[relevantHistory.length - 1]; 
-    const weight = parseNum(last.Paino || last.paino || last.s1_weight);
-    const reps = parseNum(last.Toistot || last.toistot || last.s1_reps);
-    const step = exerciseObj.increment || 2.5;
-    const targetMax = parseInt(targetRange.split('-').pop());
-    if (weight === 0) return { text: "Viimeksi: -", status: 'normal' };
-    return reps >= targetMax 
-      ? { text: `Suositus: ${weight + step}kg (Viimeksi ${weight}kg x ${reps})`, status: 'level-up' }
-      : { text: `Viimeksi: ${weight}kg x ${reps}`, status: 'normal' };
+
+    if (relevant.length === 0) return { text: "Ei historiaa", status: 'normal' };
+    const last = relevant[relevant.length - 1]; 
+    
+    // Yritetään löytää paino ja toistot eri sarakevaihtoehdoista
+    const w = parseNum(last.Paino || last.paino || last.s1_weight || last.Weight);
+    const r = parseNum(last.Toistot || last.toistot || last.s1_reps || last.Reps);
+    
+    const maxR = parseInt(range.split('-').pop());
+    if (w === 0) return { text: "Viimeksi: -", status: 'normal' };
+    
+    return r >= maxR 
+      ? { text: `Suositus: ${w + obj.increment}kg (Viimeksi ${w}kg x ${r})`, status: 'level-up' }
+      : { text: `Viimeksi: ${w}kg x ${r}`, status: 'normal' };
   };
 
+  // ... (muu koodi pysyy samana, startWorkout jne.)
   const startWorkout = (type) => {
     setActiveWorkout({ type, exercises: WORKOUT_DATA[type].map(ex => ({ ...ex, currentName: ex.name, sets: [{ weight: '', reps: '' }] })), startTime: new Date().toLocaleString('fi-FI') });
-  };
-
-  const updateSet = (id, i, f, v) => {
-    setActiveWorkout(p => ({ ...p, exercises: p.exercises.map(ex => ex.id === id ? { ...ex, sets: ex.sets.map((s, idx) => idx === i ? { ...s, [f]: v } : s) } : ex) }));
-  };
-
-  const addSet = (id) => {
-    setActiveWorkout(p => ({ ...p, exercises: p.exercises.map(ex => ex.id === id ? { ...ex, sets: [...ex.sets, { weight: ex.sets[ex.sets.length-1].weight, reps: '' }] } : ex) }));
-  };
-
-  const deleteSet = (exId, setIndex) => {
-    setActiveWorkout(prev => ({
-      ...prev,
-      exercises: prev.exercises.map(ex => {
-        if (ex.id === exId && ex.sets.length > 1) return { ...ex, sets: ex.sets.filter((_, i) => i !== setIndex) };
-        return ex;
-      })
-    }));
-  };
-
-  const swapExercise = (id) => {
-    setActiveWorkout(p => ({ ...p, exercises: p.exercises.map(ex => {
-      if (ex.id === id) {
-        const opts = [ex.name, ...ex.alternatives];
-        const next = (opts.indexOf(ex.currentName) + 1) % opts.length;
-        return { ...ex, currentName: opts[next] };
-      }
-      return ex;
-    })}));
-  };
-
-  const saveToSheets = async () => {
-    if (!window.confirm("Tallennetaanko?")) return;
-    const payload = activeWorkout.exercises.map(ex => {
-      const d = { Aikaleima: new Date().toLocaleString('fi-FI'), workoutType: activeWorkout.type, musclegroup: ex.muscle, exercisename: ex.currentName, notes: "" };
-      ex.sets.forEach((set, i) => { if (i < 5) { d[`s${i+1}_reps`] = set.reps; d[`s${i+1}_weight`] = set.weight; }});
-      return d;
-    });
-    try {
-      const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-      if (response.ok || response.type === 'opaque') { alert("Tallennettu!"); localStorage.removeItem('active_workout'); setActiveWorkout(null); }
-    } catch (e) { alert("Tallennusvirhe."); }
   };
 
   if (!activeWorkout) {
@@ -146,9 +116,8 @@ function App() {
     <div className="container">
       <header className="header-card no-sticky">
         <h1 className="glock-text">{activeWorkout.type}-TREENI</h1>
-        <button className="cancel-btn" onClick={() => { if(window.confirm("Hylätäänkö treeni?")) { localStorage.removeItem('active_workout'); setActiveWorkout(null); }}}>✕</button>
+        <button className="cancel-btn" onClick={() => setActiveWorkout(null)}>✕</button>
       </header>
-
       <main className="workout-list">
         {activeWorkout.exercises.map(ex => {
           const info = getRecommendation(ex.currentName, ex.targetReps, ex);
@@ -159,25 +128,50 @@ function App() {
                   <span className="muscle-tag">{ex.muscle}</span>
                   <h2 className="exercise-title">{ex.currentName}</h2>
                 </div>
-                <button className="swap-action-btn" onClick={() => swapExercise(ex.id)}>SWAP</button>
+                <button className="swap-action-btn" onClick={() => {
+                  const opts = [ex.name, ...ex.alternatives];
+                  const next = (opts.indexOf(ex.currentName) + 1) % opts.length;
+                  setActiveWorkout(p => ({ ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, currentName: opts[next] } : e) }));
+                }}>SWAP</button>
               </div>
               <div className={`stats-hint ${info.status}`}>{info.text}</div>
               <div className="sets-container">
                 {ex.sets.map((set, i) => (
                   <div key={i} className="set-row-pill">
                     <span className="set-num">{i+1}.</span>
-                    <input type="number" step="any" placeholder="kg" value={set.weight} onChange={e => updateSet(ex.id, i, 'weight', e.target.value)} />
-                    <input type="number" placeholder="reps" value={set.reps} onChange={e => updateSet(ex.id, i, 'reps', e.target.value)} />
-                    {ex.sets.length > 1 && <button className="delete-set-btn" onClick={() => deleteSet(ex.id, i)} tabIndex="-1">✕</button>}
+                    <input type="number" step="any" placeholder="kg" value={set.weight} onChange={e => {
+                      const val = e.target.value;
+                      setActiveWorkout(p => ({ ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, weight: val } : s) } : e) }));
+                    }} />
+                    <input type="number" placeholder="reps" value={set.reps} onChange={e => {
+                      const val = e.target.value;
+                      setActiveWorkout(p => ({ ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, reps: val } : s) } : e) }));
+                    }} />
+                    {ex.sets.length > 1 && <button className="delete-set-btn" onClick={() => {
+                      setActiveWorkout(p => ({ ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.filter((_, idx) => idx !== i) } : e) }));
+                    }}>✕</button>}
                   </div>
                 ))}
               </div>
-              <button className="add-set-pill" onClick={() => addSet(ex.id)}>+ LISÄÄ SARJA</button>
+              <button className="add-set-pill" onClick={() => {
+                setActiveWorkout(p => ({ ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: [...e.sets, { weight: e.sets[e.sets.length-1].weight, reps: '' }] } : e) }));
+              }}>+ LISÄÄ SARJA</button>
             </div>
           );
         })}
       </main>
-      <button className="main-save-btn" onClick={saveToSheets}>TALLENNA TREENI</button>
+      <button className="main-save-btn" onClick={async () => {
+        if (!window.confirm("Tallennetaanko?")) return;
+        const payload = activeWorkout.exercises.map(ex => {
+          const d = { Aikaleima: new Date().toLocaleString('fi-FI'), workoutType: activeWorkout.type, musclegroup: ex.muscle, exercisename: ex.currentName };
+          ex.sets.forEach((s, i) => { if (i < 5) { d[`s${i+1}_reps`] = s.reps; d[`s${i+1}_weight`] = s.weight; }});
+          return d;
+        });
+        try {
+          const r = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+          if (r.ok || r.type === 'opaque') { alert("Tallennettu!"); setActiveWorkout(null); }
+        } catch (e) { alert("Virhe."); }
+      }}>TALLENNA TREENI</button>
     </div>
   );
 }
