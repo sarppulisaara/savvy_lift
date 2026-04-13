@@ -1,4 +1,4 @@
-const KEY = "workout_sessions"; // Synkronoitu muiden tiedostojen kanssa
+const KEY = "workout_sessions";
 
 export function loadSessions() {
   try {
@@ -29,17 +29,20 @@ export function upsertSession(session) {
 
 export function createSessionFromTemplate(template, mode) {
   return {
-    // Käytetään Date.now() jos randomUUID takkuaa
-    id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Date.now(),
+    id: typeof crypto.randomUUID === "function" ? crypto.randomUUID() : Date.now(),
     createdAt: new Date().toISOString(),
     mode,
     title: template.title,
     exercises: template.exercises.map((ex) => ({
       id: ex.id,
       name: ex.name,
+      baseName: ex.name,
+      currentName: ex.name,
+      alternatives: ex.alternatives || [],
       muscleGroup: ex.muscleGroup,
       targetSets: ex.targetSets,
       targetReps: ex.targetReps,
+      increment: ex.increment || 2.5,
       sets: Array.from({ length: ex.targetSets }, () => ({
         weight: null,
         repsDone: null
@@ -48,7 +51,6 @@ export function createSessionFromTemplate(template, mode) {
   };
 }
 
-// MUUTETTU: Ei tallenna treeniä muistiin ennen kuin käyttäjä oikeasti tekee jotain
 export function getOrCreateTodaySession(template, mode) {
   return createSessionFromTemplate(template, mode);
 }

@@ -1,6 +1,12 @@
 import React from "react";
 
-export function ExerciseCard({ exercise, sets, onEditSet }) {
+export function ExerciseCard({
+  exercise,
+  sets,
+  onEditSet,
+  onSwapExercise,
+  recommendation
+}) {
   const cardStyle = {
     background: "#fff",
     borderRadius: 22,
@@ -35,38 +41,61 @@ export function ExerciseCard({ exercise, sets, onEditSet }) {
     marginTop: 14
   };
 
+  const infoStyle = {
+    marginTop: 10,
+    display: "inline-block",
+    padding: "8px 12px",
+    borderRadius: 12,
+    background: recommendation?.status === "level-up" ? "#dcfce7" : "#f3f4f6",
+    color: "#111827",
+    fontSize: 13,
+    fontWeight: 700
+  };
+
   const targetForDisplay = pickTargetNumber(exercise.targetReps);
+  const displayName = exercise.currentName || exercise.name;
 
   return (
     <div style={cardStyle}>
       <div style={titleRow}>
         <div>
-          <div style={titleStyle}>{exercise.name}</div>
+          <div style={titleStyle}>{displayName}</div>
           <div style={targetStyle}>
             {exercise.targetSets} sarjaa x {exercise.targetReps} toistoa
           </div>
+
+          {recommendation && (
+            <div style={infoStyle}>
+              {recommendation.text}
+            </div>
+          )}
         </div>
 
         <button
           type="button"
           style={{
             border: "none",
-            background: "transparent",
-            fontSize: 20,
-            cursor: "pointer"
+            background: "#111827",
+            color: "#fff",
+            fontSize: 14,
+            fontWeight: 800,
+            borderRadius: 12,
+            cursor: "pointer",
+            padding: "10px 12px",
+            minWidth: 70
           }}
-          aria-label="Lisätoiminnot"
-          onClick={() => alert("Myöhemmin: vaihda liike, ohje, muistiinpano")}
+          aria-label="Vaihda liike"
+          onClick={() => onSwapExercise(exercise.id)}
         >
-          ⋮
+          Vaihda
         </button>
       </div>
 
       <div style={pillsRow}>
         {Array.from({ length: exercise.targetSets }, (_, i) => {
-        const s = sets?.[i] || { weight: null, repsDone: null };
-const isDone = s.repsDone != null;
-const bg = isDone ? "#2563eb" : "#111827"; // sininen kun tehty
+          const s = sets?.[i] || { weight: null, repsDone: null };
+          const isDone = s.repsDone != null;
+          const bg = isDone ? "#2563eb" : "#111827";
           const top = s.weight != null ? `${s.weight}kg` : "";
           const reps = s.repsDone != null ? s.repsDone : 0;
 
