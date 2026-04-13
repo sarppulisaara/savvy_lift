@@ -253,7 +253,7 @@ export default function Workout() {
           cursor: loading ? "not-allowed" : "pointer"
         }}
       >
-        {loading ? "Tallennetaan..." : "📤 Lähetä ja tallenna"}
+        {loading ? "Tallennetaan..." : "Lähetä ja tallenna"}
       </button>
 
       {editing && (
