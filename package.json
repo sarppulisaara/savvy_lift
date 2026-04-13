@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://sarppulisaara.github.io/treeni-pwa",
+  "homepage": "https://sarppulisaara.github.io/savvy_lift",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
