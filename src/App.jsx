@@ -98,15 +98,17 @@ const WORKOUT_DATA = {
       increment: 0.5
     },
     {
-      id: 'a6',
-      name: 'Vatsarutistus laitteessa',
-      muscle: 'Core',
-      alternatives: [
-        'Lankku'
-      ],
-      targetReps: '15-20',
-      increment: 2.5
-    }
+  id: 'a6',
+  name: 'Vatsarutistus laitteessa',
+  muscle: 'Core',
+  alternatives: [
+    'Lankku',
+    'Vatsarutistus jumppapallolla',
+    'Istumaannousu lisäpainon kanssa'
+  ],
+  targetReps: '15-20',
+  increment: 2.5
+}
   ],
 
   B: [
@@ -167,15 +169,20 @@ const WORKOUT_DATA = {
       increment: 1.0
     },
     {
-      id: 'b6',
-      name: 'Vatsarutistus laitteessa',
-      muscle: 'Core',
-      alternatives: [
-        'Lankku'
-      ],
-      targetReps: '15-20',
-      increment: 2.5
-    }
+  id: 'b6',
+  name: 'Vatsarutistus laitteessa',
+  muscle: 'Core',
+  alternatives: [
+    'Lankku',
+    'Jalkojen nosto roikkuen',
+    'Vatsarutistus jumppapallolla',
+    'Jalkojen nostot selinmakuulla',
+    'Russian twist',
+    'Istumaannousu lisäpainon kanssa'
+  ],
+  targetReps: '15-20',
+  increment: 2.5
+  }
   ]
 };
 
