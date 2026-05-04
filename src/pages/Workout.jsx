@@ -3,7 +3,7 @@ import { workoutTemplates } from "../data/template";
 import { ExerciseCard } from "../components/ExerciseCard";
 import { getOrCreateTodaySession } from "../storage/store";
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzYmQHU3eHyNOWBAevAH4xWDj7PWHppmhmgIaZHgVlyC6Q0NP-ApPREIpXEkzvv5iJf/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxK9_ZncVDu9_R4FqzxbFv3S2Bpc9ot9q-abq5yCfF2UxajM-r3cTT9RuQjJLFbK7dY/exec";
 
 const EXERCISE_DICTIONARY ={
   'Smith Bulgarian Split Squat': ['Bulgarialainen', 'Bulgarian', 'Bulgarialainen askelkyykky', 'Smith bulgarialainen'],
