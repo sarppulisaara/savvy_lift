@@ -1,31 +1,33 @@
 import React, { useState, useEffect } from 'react';
 import './App.css'; 
 
+const DRAFT_KEY = 'savvy_lift_active_workout';
+
 const EXERCISE_DICTIONARY = {
-  'Smith Bulgarian Split Squat': ['Bulgarialainen', 'Bulgarian', 'Bulgarialainen askelkyykky', 'Smith bulgarialainen'],
+  'Smith Bulgarian Split Squat': ['Bulgarialainen askelkyykky', 'Smith bulgarialainen'],
   'Bulgarian Split Squat käsipainoilla': ['Bulgarialainen käsipainoilla'],
   'Jalkaprässi – vaakaprässi': ['Vaakaprässi'],
-  'Jalkaprässi (pystysuora / 45°)': ['45-asteen prässi', '45 asteen prässi', 'Prässi'],
-  'Vertical Row': ['Alasoutu', 'Low Row', 'Soutu'],
+  'Jalkaprässi (pystysuora / 45°)': ['45-asteen prässi', '45 asteen prässi'],
+  'Vertical Row': ['Vertical row'],
   'Low Row (kaapeli)': ['Low Row', 'Kaapelisoutu', 'Soutu kaapelissa'],
-  'Chest Press (laite)': ['Penkkipunnerrus', 'Chest Press'],
+  'Chest Press (laite)': ['Chest Press'],
   'Vinopenkki laitteessa': ['Vinopenkki', 'Incline press', 'Incline'],
   'Pec Deck': ['Pecdeck', 'Rintapekki', 'Rintapec'],
-  'Arnold Press': ['Arnold'],
+  'Arnold Press': ['Arnold', 'Arnold press'],
   'Pystypunnerrus laitteessa': ['Pystypunnerrus', 'Shoulder press'],
   'Pystypunnerrus käsipainoilla': ['Pystypunnerrus kp'],
-  'Vipunostot sivulle': ['Sivuvipu', 'Vipunostot', 'Lateral raise'],
+  'Vipunostot sivulle': ['Sivuvipu', 'Lateral raise'],
   'Vipunostot käsipainoilla': ['Vipunostot kp', 'Sivuvipu kp'],
   'Pystysoutu leveällä': ['Pystysoutu', 'Upright row'],
-  'Hammer Curl': ['Hauis', 'Hammer'],
+  'Hammer Curl': ['Hammer'],
   'Hauiskääntö käsipainoilla': ['Hauiskääntö', 'Dumbbell curl', 'DB curl'],
-  'Push Down': ['Ojentajat', 'Pushdown'],
+  'Push Down': ['Pushdown'],
   'Ojentajat käsipainoilla': ['Ranskalainen punnerrus', 'Triceps extension'],
   'Reiden loitonnus (abductor)': ['Abductor', 'Loitonnus'],
   'Reiden lähennys (adductor)': ['Adductor'],
   'Vatsarutistus laitteessa': ['Vatsat', 'Ab crunch', 'Vatsat laitteessa'],
   'Lankku': ['Plank'],
-  'Glute Drive': ['Booty Builder', 'Lantionnosto', 'Glute drive', 'Booty Builder -laite'],
+  'Glute Drive': ['Booty Builder', 'Glute drive', 'Booty Builder -laite'],
   'Lantionnosto käsipainoilla': ['Hip thrust käsipainoilla'],
   'Reiden ojennus': ['Ojennus', 'Leg extension'],
   'Reiden koukistus': ['Koukistus', 'Leg curl', 'Reiden koukistus istuen'],
@@ -33,7 +35,12 @@ const EXERCISE_DICTIONARY = {
   'SJMV': ['Suorin jaloin maastaveto', 'Romanian deadlift', 'RDL', 'SJMV kp'],
   'Penkkipunnerrus käsipainoilla': ['Penkkipunnerrus kp', 'Käsipainopenkki', 'DB penkki'],
   'Yhden käden soutu käsipainoilla': ['Yhden käden soutu kp', 'Käsipainosoutu'],
-  'Askelkyykky käsipainoilla': ['Askelkyykky kp', 'Askelkyykky']
+  'Askelkyykky käsipainoilla': ['Askelkyykky kp', 'Askelkyykky'],
+  'Jalkojen nosto roikkuen': ['Hanging leg raise'],
+  'Vatsarutistus jumppapallolla': ['Swiss ball crunch', 'Crunch jumppapallolla'],
+  'Jalkojen nostot selinmakuulla': ['Leg raise', 'Leg raises'],
+  'Russian twist': ['Russian twists'],
+  'Istumaannousu lisäpainon kanssa': ['Weighted sit up', 'Sit up lisäpainolla']
 };
 
 const WORKOUT_DATA = {
@@ -98,17 +105,17 @@ const WORKOUT_DATA = {
       increment: 0.5
     },
     {
-  id: 'a6',
-  name: 'Vatsarutistus laitteessa',
-  muscle: 'Core',
-  alternatives: [
-    'Lankku',
-    'Vatsarutistus jumppapallolla',
-    'Istumaannousu lisäpainon kanssa'
-  ],
-  targetReps: '15-20',
-  increment: 2.5
-}
+      id: 'a6',
+      name: 'Vatsarutistus laitteessa',
+      muscle: 'Core',
+      alternatives: [
+        'Lankku',
+        'Vatsarutistus jumppapallolla',
+        'Istumaannousu lisäpainon kanssa'
+      ],
+      targetReps: '15-20',
+      increment: 2.5
+    }
   ],
 
   B: [
@@ -169,28 +176,36 @@ const WORKOUT_DATA = {
       increment: 1.0
     },
     {
-  id: 'b6',
-  name: 'Vatsarutistus laitteessa',
-  muscle: 'Core',
-  alternatives: [
-    'Lankku',
-    'Jalkojen nosto roikkuen',
-    'Vatsarutistus jumppapallolla',
-    'Jalkojen nostot selinmakuulla',
-    'Russian twist',
-    'Istumaannousu lisäpainon kanssa'
-  ],
-  targetReps: '15-20',
-  increment: 2.5
-  }
+      id: 'b6',
+      name: 'Vatsarutistus laitteessa',
+      muscle: 'Core',
+      alternatives: [
+        'Lankku',
+        'Jalkojen nosto roikkuen',
+        'Vatsarutistus jumppapallolla',
+        'Jalkojen nostot selinmakuulla',
+        'Russian twist',
+        'Istumaannousu lisäpainon kanssa'
+      ],
+      targetReps: '15-20',
+      increment: 2.5
+    }
   ]
 };
 
 function App() {
-  const [activeWorkout, setActiveWorkout] = useState(null);
+  const [activeWorkout, setActiveWorkout] = useState(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
   const [sheetsHistory, setSheetsHistory] = useState([]);
   
-  const API_URL = "https://script.google.com/macros/s/AKfycbxhmF1_C5q6intFIBvECvYKH6D1-u_UmYBrotic-ggWWDu99IWVYhle8ArlJJB4XhfR/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbxK9_ZncVDu9_R4FqzxbFv3S2Bpc9ot9q-abq5yCfF2UxajM-r3cTT9RuQjJLFbK7dY/exec"; 
 
   useEffect(() => {
     fetch(API_URL)
@@ -198,6 +213,16 @@ function App() {
       .then(data => setSheetsHistory(data))
       .catch(err => console.error(err));
   }, []);
+
+  useEffect(() => {
+    if (activeWorkout) {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(activeWorkout));
+    }
+  }, [activeWorkout]);
+
+  const normalizeName = (value) => {
+    return String(value || '').toLowerCase().trim();
+  };
 
   const parseNum = (val) => {
     if (!val) return 0;
@@ -207,12 +232,12 @@ function App() {
 
   const getRecommendation = (name, range, obj) => {
     const aliases = EXERCISE_DICTIONARY[name] || [];
-    const searchTerms = [name, ...aliases].map(n => n.toLowerCase().trim());
+    const searchTerms = [name, ...aliases].map(normalizeName);
 
     const relevant = sheetsHistory.filter(h => {
       const rawName = h.Liike || h.liike || h.exercisename || h.exerciseName || "";
-      const hName = String(rawName).toLowerCase().trim();
-      return searchTerms.some(term => hName === term || hName.includes(term));
+      const hName = normalizeName(rawName);
+      return searchTerms.some(term => hName === term);
     });
 
     if (relevant.length === 0) {
@@ -232,14 +257,24 @@ function App() {
   };
 
   const startWorkout = (type) => {
-    setActiveWorkout({
+    const newWorkout = {
       type,
       exercises: WORKOUT_DATA[type].map(ex => ({
         ...ex,
         currentName: ex.name,
         sets: [{ weight: '', reps: '' }]
       }))
-    });
+    };
+
+    setActiveWorkout(newWorkout);
+    localStorage.setItem(DRAFT_KEY, JSON.stringify(newWorkout));
+  };
+
+  const cancelWorkout = () => {
+    if (window.confirm("Keskeytetäänkö treeni? Tallentamattomat tiedot poistuvat.")) {
+      localStorage.removeItem(DRAFT_KEY);
+      setActiveWorkout(null);
+    }
   };
 
   if (!activeWorkout) {
@@ -261,7 +296,7 @@ function App() {
     <div className="container">
       <header className="header-card">
         <h1 className="glock-text">{activeWorkout.type}-TREENI</h1>
-        <button className="cancel-btn" onClick={() => setActiveWorkout(null)}>✕</button>
+        <button className="cancel-btn" onClick={cancelWorkout}>✕</button>
       </header>
 
       <main className="workout-list">
@@ -403,6 +438,7 @@ function App() {
               body: JSON.stringify(payload)
             });
             alert("Tallennettu!");
+            localStorage.removeItem(DRAFT_KEY);
             setActiveWorkout(null);
           } catch (e) {
             alert("Virhe tallennuksessa.");
