@@ -193,6 +193,50 @@ const WORKOUT_DATA = {
   ]
 };
 
+const EXERCISE_BANK = [
+  { name: 'Smith Bulgarian Split Squat', muscle: 'Jalat', targetReps: '6-8', increment: 2.5, alternatives: ['Bulgarian Split Squat käsipainoilla', 'Jalkaprässi – vaakaprässi'] },
+  { name: 'Bulgarian Split Squat käsipainoilla', muscle: 'Jalat', targetReps: '6-8', increment: 2.5, alternatives: ['Smith Bulgarian Split Squat', 'Jalkaprässi – vaakaprässi'] },
+  { name: 'Jalkaprässi – vaakaprässi', muscle: 'Jalat', targetReps: '8-10', increment: 5.0, alternatives: ['Jalkaprässi (pystysuora / 45°)', 'Smith Bulgarian Split Squat'] },
+  { name: 'Jalkaprässi (pystysuora / 45°)', muscle: 'Jalat', targetReps: '8-10', increment: 5.0, alternatives: ['Jalkaprässi – vaakaprässi', 'Smith Bulgarian Split Squat'] },
+  { name: 'Reiden ojennus', muscle: 'Jalat', targetReps: '12-15', increment: 2.5, alternatives: ['Jalkaprässi – vaakaprässi'] },
+  { name: 'Reiden koukistus', muscle: 'Takareidet', targetReps: '10-12', increment: 2.5, alternatives: ['SJMV', 'Glute Drive'] },
+  { name: 'Glute Drive', muscle: 'Pakarat', targetReps: '6-8', increment: 5.0, alternatives: ['SJMV', 'Lantionnosto käsipainoilla'] },
+  { name: 'SJMV', muscle: 'Takareidet', targetReps: '8-10', increment: 5.0, alternatives: ['Reiden koukistus', 'Glute Drive'] },
+
+  { name: 'Chest Press (laite)', muscle: 'Rinta', targetReps: '6-8', increment: 2.5, alternatives: ['Vinopenkki laitteessa', 'Pec Deck', 'Penkkipunnerrus käsipainoilla'] },
+  { name: 'Penkkipunnerrus käsipainoilla', muscle: 'Rinta', targetReps: '6-8', increment: 2.5, alternatives: ['Chest Press (laite)', 'Vinopenkki laitteessa'] },
+  { name: 'Vinopenkki laitteessa', muscle: 'Rinta', targetReps: '8-10', increment: 2.5, alternatives: ['Chest Press (laite)', 'Pec Deck'] },
+  { name: 'Pec Deck', muscle: 'Rinta', targetReps: '10-12', increment: 2.5, alternatives: ['Chest Press (laite)', 'Vinopenkki laitteessa'] },
+
+  { name: 'Low Row (kaapeli)', muscle: 'Selkä', targetReps: '6-8', increment: 2.5, alternatives: ['Vertical Row', 'Lat Pulldown', 'Yhden käden soutu käsipainoilla'] },
+  { name: 'Vertical Row', muscle: 'Selkä', targetReps: '8-10', increment: 2.5, alternatives: ['Low Row (kaapeli)', 'Lat Pulldown'] },
+  { name: 'Lat Pulldown', muscle: 'Selkä', targetReps: '6-8', increment: 2.5, alternatives: ['Vertical Row', 'Low Row (kaapeli)'] },
+  { name: 'Yhden käden soutu käsipainoilla', muscle: 'Selkä', targetReps: '8-10', increment: 2.5, alternatives: ['Low Row (kaapeli)', 'Vertical Row'] },
+
+  { name: 'Pystypunnerrus laitteessa', muscle: 'Olkapäät', targetReps: '8-10', increment: 1.0, alternatives: ['Arnold Press', 'Pystypunnerrus käsipainoilla'] },
+  { name: 'Pystypunnerrus käsipainoilla', muscle: 'Olkapäät', targetReps: '8-10', increment: 1.0, alternatives: ['Pystypunnerrus laitteessa', 'Arnold Press'] },
+  { name: 'Arnold Press', muscle: 'Olkapäät', targetReps: '8-10', increment: 1.0, alternatives: ['Pystypunnerrus laitteessa'] },
+  { name: 'Vipunostot sivulle', muscle: 'Olkapäät', targetReps: '12-15', increment: 0.5, alternatives: ['Vipunostot käsipainoilla', 'Pystysoutu leveällä'] },
+  { name: 'Vipunostot käsipainoilla', muscle: 'Olkapäät', targetReps: '12-15', increment: 0.5, alternatives: ['Vipunostot sivulle', 'Pystysoutu leveällä'] },
+  { name: 'Pystysoutu leveällä', muscle: 'Olkapäät', targetReps: '12-15', increment: 1.0, alternatives: ['Vipunostot sivulle', 'Vipunostot käsipainoilla'] },
+
+  { name: 'Hammer Curl', muscle: 'Hauis', targetReps: '10-12', increment: 1.0, alternatives: ['Hauiskääntö käsipainoilla'] },
+  { name: 'Hauiskääntö käsipainoilla', muscle: 'Hauis', targetReps: '10-12', increment: 1.0, alternatives: ['Hammer Curl'] },
+  { name: 'Push Down', muscle: 'Ojentajat', targetReps: '12-15', increment: 2.5, alternatives: ['Ojentajat käsipainoilla'] },
+  { name: 'Ojentajat käsipainoilla', muscle: 'Ojentajat', targetReps: '12-15', increment: 1.0, alternatives: ['Push Down'] },
+
+  { name: 'Reiden loitonnus (abductor)', muscle: 'Lantio', targetReps: '12-15', increment: 5.0, alternatives: ['Reiden lähennys (adductor)'] },
+  { name: 'Reiden lähennys (adductor)', muscle: 'Lantio', targetReps: '12-15', increment: 5.0, alternatives: ['Reiden loitonnus (abductor)'] },
+
+  { name: 'Vatsarutistus laitteessa', muscle: 'Core', targetReps: '15-20', increment: 2.5, alternatives: ['Lankku', 'Jalkojen nosto roikkuen', 'Russian twist'] },
+  { name: 'Lankku', muscle: 'Core', targetReps: '30-60', increment: 5.0, alternatives: ['Vatsarutistus laitteessa'] },
+  { name: 'Jalkojen nosto roikkuen', muscle: 'Core', targetReps: '12-15', increment: 1.0, alternatives: ['Jalkojen nostot selinmakuulla', 'Vatsarutistus laitteessa'] },
+  { name: 'Jalkojen nostot selinmakuulla', muscle: 'Core', targetReps: '12-15', increment: 1.0, alternatives: ['Jalkojen nosto roikkuen', 'Vatsarutistus laitteessa'] },
+  { name: 'Vatsarutistus jumppapallolla', muscle: 'Core', targetReps: '15-20', increment: 1.0, alternatives: ['Vatsarutistus laitteessa'] },
+  { name: 'Russian twist', muscle: 'Core', targetReps: '12-20', increment: 1.0, alternatives: ['Vatsarutistus jumppapallolla'] },
+  { name: 'Istumaannousu lisäpainon kanssa', muscle: 'Core', targetReps: '10-15', increment: 1.0, alternatives: ['Vatsarutistus laitteessa'] }
+];
+
 function App() {
   const [activeWorkout, setActiveWorkout] = useState(() => {
     try {
@@ -204,6 +248,7 @@ function App() {
   });
 
   const [sheetsHistory, setSheetsHistory] = useState([]);
+  const [showAddExercise, setShowAddExercise] = useState(false);
   
   const API_URL = "https://script.google.com/macros/s/AKfycbxK9_ZncVDu9_R4FqzxbFv3S2Bpc9ot9q-abq5yCfF2UxajM-r3cTT9RuQjJLFbK7dY/exec"; 
 
@@ -247,7 +292,7 @@ function App() {
     const last = relevant[relevant.length - 1];
     const w = parseNum(last.Paino || last.paino || last.s1_weight);
     const r = parseNum(last.Toistot || last.toistot || last.s1_reps);
-    const maxR = parseInt(range.split('-').pop(), 10);
+    const maxR = parseInt(String(range).split('-').pop(), 10);
 
     if (w === 0) return { text: "Viimeksi: -", status: 'normal' };
 
@@ -274,7 +319,33 @@ function App() {
     if (window.confirm("Keskeytetäänkö treeni? Tallentamattomat tiedot poistuvat.")) {
       localStorage.removeItem(DRAFT_KEY);
       setActiveWorkout(null);
+      setShowAddExercise(false);
     }
+  };
+
+  const removeExercise = (id) => {
+    if (!window.confirm("Poistetaanko tämä liike vain tämän päivän treenistä?")) return;
+
+    setActiveWorkout(p => ({
+      ...p,
+      exercises: p.exercises.filter(e => e.id !== id)
+    }));
+  };
+
+  const addExercise = (selected) => {
+    const newExercise = {
+      ...selected,
+      id: `extra_${Date.now()}`,
+      currentName: selected.name,
+      sets: [{ weight: '', reps: '' }]
+    };
+
+    setActiveWorkout(p => ({
+      ...p,
+      exercises: [...p.exercises, newExercise]
+    }));
+
+    setShowAddExercise(false);
   };
 
   if (!activeWorkout) {
@@ -311,21 +382,30 @@ function App() {
                   <h2 className="exercise-title">{ex.currentName}</h2>
                 </div>
 
-                <button
-                  className="swap-action-btn"
-                  onClick={() => {
-                    const opts = [ex.name, ...ex.alternatives];
-                    const next = (opts.indexOf(ex.currentName) + 1) % opts.length;
-                    setActiveWorkout(p => ({
-                      ...p,
-                      exercises: p.exercises.map(e =>
-                        e.id === ex.id ? { ...e, currentName: opts[next] } : e
-                      )
-                    }));
-                  }}
-                >
-                  SWAP
-                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <button
+                    className="swap-action-btn"
+                    onClick={() => {
+                      const opts = [ex.name, ...ex.alternatives];
+                      const next = (opts.indexOf(ex.currentName) + 1) % opts.length;
+                      setActiveWorkout(p => ({
+                        ...p,
+                        exercises: p.exercises.map(e =>
+                          e.id === ex.id ? { ...e, currentName: opts[next] } : e
+                        )
+                      }));
+                    }}
+                  >
+                    SWAP
+                  </button>
+
+                  <button
+                    className="swap-action-btn"
+                    onClick={() => removeExercise(ex.id)}
+                  >
+                    POISTA
+                  </button>
+                </div>
               </div>
 
               <div className={`stats-hint ${info.status}`}>{info.text}</div>
@@ -404,6 +484,45 @@ function App() {
             </div>
           );
         })}
+
+        {!showAddExercise && (
+          <button
+            className="add-set-pill"
+            onClick={() => setShowAddExercise(true)}
+          >
+            + LISÄÄ LIIKE
+          </button>
+        )}
+
+        {showAddExercise && (
+          <div className="exercise-card">
+            <div className="exercise-header">
+              <div style={{ flex: 1 }}>
+                <span className="muscle-tag">Lisäliike</span>
+                <h2 className="exercise-title">Valitse liike</h2>
+              </div>
+
+              <button
+                className="swap-action-btn"
+                onClick={() => setShowAddExercise(false)}
+              >
+                PERU
+              </button>
+            </div>
+
+            <div className="sets-container">
+              {EXERCISE_BANK.map((bankExercise) => (
+                <button
+                  key={bankExercise.name}
+                  className="add-set-pill"
+                  onClick={() => addExercise(bankExercise)}
+                >
+                  {bankExercise.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </main>
 
       <button
@@ -440,6 +559,7 @@ function App() {
             alert("Tallennettu!");
             localStorage.removeItem(DRAFT_KEY);
             setActiveWorkout(null);
+            setShowAddExercise(false);
           } catch (e) {
             alert("Virhe tallennuksessa.");
           }
