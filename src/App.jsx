@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import './App.css'; 
 
+const DRAFT_KEY = 'savvy_lift_active_workout';
+
+// SÄILYTETTY: Sun alkuperäinen sanasto
 const EXERCISE_DICTIONARY = {
   'Smith Bulgarian Split Squat': ['Bulgarialainen', 'Bulgarian', 'Bulgarialainen askelkyykky', 'Smith bulgarialainen'],
   'Bulgarian Split Squat käsipainoilla': ['Bulgarialainen käsipainoilla'],
@@ -36,6 +39,7 @@ const EXERCISE_DICTIONARY = {
   'Askelkyykky käsipainoilla': ['Askelkyykky kp', 'Askelkyykky']
 };
 
+// SÄILYTETTY: Sun alkuperäinen WORKOUT_DATA
 const WORKOUT_DATA = {
   A: [
     { id: 'a1', name: 'Smith Bulgarian Split Squat', muscle: 'Jalat', alternatives: ['Bulgarian Split Squat käsipainoilla', 'Jalkaprässi – vaakaprässi', 'Jalkaprässi (pystysuora / 45°)'], targetReps: '6-8', increment: 2.5 },
@@ -55,30 +59,51 @@ const WORKOUT_DATA = {
   ]
 };
 
+// LISÄTTY: Pankki, josta voi lisätä liikkeitä lennosta
+const EXERCISE_BANK = [
+  ...WORKOUT_DATA.A,
+  ...WORKOUT_DATA.B,
+  { name: 'Push Down', muscle: 'Ojentajat', targetReps: '12-15', increment: 2.5, alternatives: ['Ojentajat käsipainoilla'] },
+  { name: 'Reiden ojennus', muscle: 'Jalat', targetReps: '12-15', increment: 2.5, alternatives: ['Jalkaprässi – vaakaprässi'] }
+];
+
 function App() {
-  const [activeWorkout, setActiveWorkout] = useState(null);
+  // SÄILYTETTY: LocalStorage-tuki mutta alustettu sun toimivalla tyylillä
+  const [activeWorkout, setActiveWorkout] = useState(() => {
+    try {
+      const saved = localStorage.getItem(DRAFT_KEY);
+      return saved ? JSON.parse(saved) : null;
+    } catch { return null; }
+  });
+
   const [sheetsHistory, setSheetsHistory] = useState([]);
+  const [showAddExercise, setShowAddExercise] = useState(false);
   
-  // VARMISTA TÄMÄ URL: Käytä sitä, joka varmasti toimii!
+  // SÄILYTETTY: Sun varmasti toimiva URL
   const API_URL = "https://script.google.com/macros/s/AKfycbxhmF1_C5q6intFIBvECvYKH6D1-u_UmYBrotic-ggWWDu99IWVYhle8ArlJJB4XhfR/exec"; 
 
   useEffect(() => {
     fetch(API_URL)
       .then(res => res.json())
-      .then(data => {
-        // Varmistetaan, että tallennetaan lista
-        const rows = Array.isArray(data) ? data : (data.data || data.rows || []);
-        setSheetsHistory(rows);
-      })
-      .catch(err => console.error("Haku epäonnistui:", err));
+      .then(data => setSheetsHistory(data))
+      .catch(err => console.error(err));
   }, []);
 
+  // TALLENNUS: Pidetään aktiivinen treeni tallessa jos selain refreshataan
+  useEffect(() => {
+    if (activeWorkout) {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(activeWorkout));
+    }
+  }, [activeWorkout]);
+
+  // SÄILYTETTY: Sun alkuperäinen parseNum
   const parseNum = (val) => {
     if (!val) return 0;
     const n = parseFloat(String(val).replace("'", "").replace(',', '.').trim());
     return isNaN(n) ? 0 : n;
   };
 
+  // SÄILYTETTY: Sun alkuperäinen suosituslogiikka
   const getRecommendation = (name, range, obj) => {
     const aliases = EXERCISE_DICTIONARY[name] || [];
     const searchTerms = [name, ...aliases].map(n => n.toLowerCase().trim());
@@ -86,13 +111,10 @@ function App() {
     const relevant = sheetsHistory.filter(h => {
       const rawName = h.Liike || h.liike || h.exercisename || h.exerciseName || "";
       const hName = String(rawName).toLowerCase().trim();
-      // Käytetään vanhaa joustavaa hakua
       return searchTerms.some(term => hName === term || hName.includes(term));
     });
 
-    if (relevant.length === 0) {
-      return { text: "Ei historiaa", status: 'normal' };
-    }
+    if (relevant.length === 0) return { text: "Ei historiaa", status: 'normal' };
 
     const last = relevant[relevant.length - 1];
     const w = parseNum(last.Paino || last.paino || last.s1_weight);
@@ -106,32 +128,39 @@ function App() {
       : { text: `Viimeksi: ${w}kg x ${r}`, status: 'normal' };
   };
 
+  // SÄILYTETTY: Sun alkuperäinen aloituslogiikka
   const startWorkout = (type) => {
     setActiveWorkout({
       type,
-      exercises: WORKOUT_DATA[type].map(ex => {
-        // TÄSSÄ SE TAIKA: Etsitään suosituspaino heti ja laitetaan se ensimmäiseen sarjaan
-        const rec = getRecommendation(ex.name, ex.targetReps, ex);
-        let initialWeight = "";
-        
-        // Jos suositus löytyy tekstistä, poimitaan se (vapaaehtoinen lisäys, jos haluat ne "haamuina")
-        // Mutta oletuksena aloitetaan tyhjällä, kuten vanhassa koodissasi
-        
-        return {
-          ...ex,
-          currentName: ex.name,
-          sets: [{ weight: '', reps: '' }] // Aloitetaan yhdellä tyhjällä sarjalla
-        };
-      })
+      exercises: WORKOUT_DATA[type].map(ex => ({
+        ...ex,
+        currentName: ex.name,
+        sets: [{ weight: '', reps: '' }]
+      }))
     });
+  };
+
+  // LISÄTTY: Uudet hallintafunktiot
+  const removeExercise = (id) => {
+    if (!window.confirm("Poistetaanko liike?")) return;
+    setActiveWorkout(p => ({ ...p, exercises: p.exercises.filter(e => e.id !== id) }));
+  };
+
+  const addExercise = (selected) => {
+    const newEx = {
+      ...selected,
+      id: `extra_${Date.now()}`,
+      currentName: selected.name,
+      sets: [{ weight: '', reps: '' }]
+    };
+    setActiveWorkout(p => ({ ...p, exercises: [...p.exercises, newEx] }));
+    setShowAddExercise(false);
   };
 
   if (!activeWorkout) {
     return (
       <div className="container center-view">
-        <div className="main-logo-box">
-          <h1 className="glock-text savvy-logo">SAVVY LIFT</h1>
-        </div>
+        <div className="main-logo-box"><h1 className="glock-text savvy-logo">SAVVY LIFT</h1></div>
         <div className="start-actions">
           <button className="workout-select-btn a-btn" onClick={() => startWorkout('A')}>TREENI A</button>
           <button className="workout-select-btn b-btn" onClick={() => startWorkout('B')}>TREENI B</button>
@@ -144,13 +173,17 @@ function App() {
     <div className="container">
       <header className="header-card">
         <h1 className="glock-text">{activeWorkout.type}-TREENI</h1>
-        <button className="cancel-btn" onClick={() => setActiveWorkout(null)}>✕</button>
+        <button className="cancel-btn" onClick={() => {
+           if(window.confirm("Lopetetaanko treeni?")) { 
+             localStorage.removeItem(DRAFT_KEY);
+             setActiveWorkout(null); 
+           }
+        }}>✕</button>
       </header>
 
       <main className="workout-list">
         {activeWorkout.exercises.map(ex => {
           const info = getRecommendation(ex.currentName, ex.targetReps, ex);
-
           return (
             <div key={ex.id} className="exercise-card">
               <div className="exercise-header">
@@ -158,52 +191,67 @@ function App() {
                   <span className="muscle-tag">{ex.muscle}</span>
                   <h2 className="exercise-title">{ex.currentName}</h2>
                 </div>
-                <button className="swap-action-btn" onClick={() => {
-                  const opts = [ex.name, ...ex.alternatives];
-                  const next = (opts.indexOf(ex.currentName) + 1) % opts.length;
-                  setActiveWorkout(p => ({
-                    ...p,
-                    exercises: p.exercises.map(e => e.id === ex.id ? { ...e, currentName: opts[next] } : e)
-                  }));
-                }}>SWAP</button>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <button className="swap-action-btn" onClick={() => {
+                    const opts = [ex.name, ...(ex.alternatives || [])];
+                    const next = (opts.indexOf(ex.currentName) + 1) % opts.length;
+                    setActiveWorkout(p => ({
+                      ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, currentName: opts[next] } : e)
+                    }));
+                  }}>SWAP</button>
+                  {/* LISÄTTY: Poista-nappi */}
+                  <button className="swap-action-btn" style={{background: '#fee2e2', color: '#b91c1c'}} onClick={() => removeExercise(ex.id)}>POISTA</button>
+                </div>
               </div>
 
               <div className={`stats-hint ${info.status}`}>{info.text}</div>
 
               <div className="sets-container">
-                {/* TÄRKEÄ KORJAUS: Käytetään mapia, ei Array.fromia */}
+                {/* SÄILYTETTY: Alkuperäinen sarjojen renderöinti */}
                 {ex.sets.map((set, i) => (
                   <div key={i} className="set-row-pill">
                     <span className="set-num">{i + 1}.</span>
                     <input type="number" step="any" placeholder="kg" value={set.weight} onChange={e => {
                       const v = e.target.value;
                       setActiveWorkout(p => ({
-                        ...p,
-                        exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, weight: v } : s) } : e)
+                        ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, weight: v } : s) } : e)
                       }));
                     }}/>
                     <input type="number" placeholder="reps" value={set.reps} onChange={e => {
                       const v = e.target.value;
                       setActiveWorkout(p => ({
-                        ...p,
-                        exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, reps: v } : s) } : e)
+                        ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, reps: v } : s) } : e)
                       }));
                     }}/>
                   </div>
                 ))}
               </div>
-
               <button className="add-set-pill" onClick={() => {
+                const last = ex.sets[ex.sets.length-1];
                 setActiveWorkout(p => ({
-                  ...p,
-                  exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: [...e.sets, { weight: e.sets[e.sets.length - 1].weight, reps: '' }] } : e)
+                  ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: [...e.sets, { weight: last.weight, reps: '' }] } : e)
                 }));
               }}>+ LISÄÄ SARJA</button>
             </div>
           );
         })}
+
+        {/* LISÄTTY: Liikkeen lisäys-osio treenin loppuun */}
+        {!showAddExercise && <button className="add-set-pill" style={{marginTop: 20}} onClick={() => setShowAddExercise(true)}>+ LISÄÄ LIIKE</button>}
+        {showAddExercise && (
+          <div className="exercise-card" style={{marginTop: 20}}>
+             <h2 className="exercise-title">Valitse uusi liike:</h2>
+             <div style={{display: 'flex', flexDirection: 'column', gap: 10, marginTop: 15}}>
+               {EXERCISE_BANK.map(b => (
+                 <button key={b.name} className="add-set-pill" onClick={() => addExercise(b)}>{b.name}</button>
+               ))}
+               <button className="cancel-btn" style={{position: 'static', width: '100%', marginTop: 10}} onClick={() => setShowAddExercise(false)}>PERU</button>
+             </div>
+          </div>
+        )}
       </main>
 
+      {/* SÄILYTETTY: Alkuperäinen tallennuslogiikka */}
       <button className="main-save-btn" onClick={async () => {
         if (!window.confirm("Tallennetaanko?")) return;
         const payload = activeWorkout.exercises.map(ex => {
@@ -225,8 +273,9 @@ function App() {
         try {
           await fetch(API_URL, { method: "POST", mode: 'no-cors', body: JSON.stringify(payload) });
           alert("Tallennettu!");
+          localStorage.removeItem(DRAFT_KEY);
           setActiveWorkout(null);
-        } catch (e) { alert("Virhe tallennuksessa."); }
+        } catch (e) { alert("Virhe!"); }
       }}>TALLENNA TREENI</button>
     </div>
   );
