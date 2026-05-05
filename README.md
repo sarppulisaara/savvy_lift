@@ -1,26 +1,68 @@
-# React + Vite
+Savvy Lift - Fitness PWA
+A mobile-first strength training tracker built with React and Vite, focusing on progressive overload and seamless Google Sheets integration.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+🚀 Overview
+Savvy Lift is designed for users who want a lightweight, high-performance tool to track workout progress. It fetches historical data directly from Google Sheets to provide real-time weight recommendations and saves workout sessions back to the cloud.
 
-Currently, two official plugins are available:
+Tech Stack
+Frontend: React 18+ (Vite)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+State: React Hooks + LocalStorage Persistence
 
-## React Compiler
+Backend: Google Sheets API (Google Apps Script)
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Styling: Modern CSS (Mobile-responsive)
 
-## Expanding the ESLint configuration
+🛡️ AI & Developer Guardrails (CRITICAL)
+Before making any code changes, read these rules:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
-# Treeni PWA
+No Unsolicited Refactoring: Do not simplify or restructure the logic (especially getRecommendation and parseNum) unless explicitly requested.
 
-## Next steps
-- [x] UI: modal input width (boxSizing border-box) + buttons styling
-- [ ] History view: list saved sessions by date
-- [ ] Session detail view
-- [ ] Summary view: completed sets count + last values per exercise
-- [ ] Progress view per exercise (simple chart later)
-- [ ] Export JSON/CSV
-- [ ] PWA polish: icons + install
+Preserve Data Schema: Data headers like s1_weight, s1_reps, and exercisename must match the Google Sheets backend exactly.
+
+No Summarization: Always provide the full file content when suggesting updates.
+
+UI Consistency: The app renders sets directly from the ex.sets array. Do not attempt to use targetSets variables for UI rendering.
+
+📘 Technical Documentation
+Data Integration
+The app communicates with a Google Apps Script Web App.
+
+GET: Fetches workout history. Handles both direct arrays and object-wrapped data ({ data: [...] }).
+
+POST: Submits workout payloads as JSON strings. Uses mode: 'no-cors' for cross-origin compatibility.
+
+Recommendation Logic
+The getRecommendation function uses EXERCISE_DICTIONARY to find matches in historical data.
+
+Normalization: All names are trimmed and lowercased before comparison.
+
+Increment: If the user hits the maximum reps in a range, the app suggests a weight increase based on the increment value defined in WORKOUT_DATA.
+
+Crash Recovery
+Ongoing workouts are saved to localStorage under the DRAFT_KEY. If the browser refreshes, the session is hydrated automatically.
+
+🗺️ Roadmap & Next Steps
+[x] UI: Modal input width & button styling
+
+[x] Basic Exercise Swapping & Removal
+
+[x] Dynamic Exercise Addition (EXERCISE_BANK)
+
+[ ] History view: List saved sessions by date
+
+[ ] Progress view: Simple charts for exercise volume
+
+[ ] Summary view: Count of completed sets/reps post-workout
+
+[ ] PWA polish: Custom icons & manifest configuration
+
+🛠️ Development
+Setup
+Bash
+npm install
+npm run dev
+Deployment
+Build the project: npm run build
+
+Push to your hosting provider or GitHub Pages.
