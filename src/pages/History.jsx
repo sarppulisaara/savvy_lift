@@ -38,7 +38,8 @@ const EXERCISE_DICTIONARY = {
   'Vatsarutistus jumppapallolla': ['Swiss ball crunch', 'Crunch jumppapallolla'],
   'Jalkojen nostot selinmakuulla': ['Leg raise', 'Leg raises'],
   'Russian twist': ['Russian twists'],
-  'Istumaannousu lisäpainon kanssa': ['Weighted sit up', 'Sit up lisäpainolla']
+  'Istumaannousu lisäpainon kanssa': ['Weighted sit up', 'Sit up lisäpainolla'],
+  'Face Pull': ['Face pull', 'Facepull', 'Kasvoveto taljassa']
 };
 
 const WORKOUT_DATA = {
@@ -57,6 +58,14 @@ const WORKOUT_DATA = {
     { id: 'b4', name: 'Pystypunnerrus laitteessa', muscle: 'Olkapäät', reps: '8-10', increment: 1.0 },
     { id: 'b5', name: 'Hammer Curl', muscle: 'Hauis', reps: '10-12', increment: 1.0 },
     { id: 'b6', name: 'Vatsarutistus laitteessa', muscle: 'Core', reps: '15-20', increment: 2.5 }
+  ],
+  C: [
+    { id: 'c1', name: 'SJMV', muscle: 'Takaketju', reps: '8-10', increment: 5.0 },
+    { id: 'c2', name: 'Vinopenkki laitteessa', muscle: 'Rinta', reps: '8-10', increment: 2.5 },
+    { id: 'c3', name: 'Vertical Row', muscle: 'Selkä', reps: '8-10', increment: 2.5 },
+    { id: 'c4', name: 'Face Pull', muscle: 'Takaolkapää', reps: '12-15', increment: 1.0 },
+    { id: 'c5', name: 'Push Down', muscle: 'Ojentajat', reps: '12-15', increment: 2.5 },
+    { id: 'c6', name: 'Jalkojen nostot selinmakuulla', muscle: 'Core', reps: '10-15', increment: 1.0 }
   ]
 };
 
@@ -107,8 +116,9 @@ function History() {
     <div className="container">
       <div className="header-card"><h1>SAVVY LIFT</h1></div>
       <div className="tab-bar">
-        <button className={currentTab === 'A' ? 'active' : ''} onClick={() => { setCurrentTab('A'); setExercises(WORKOUT_DATA.A.map(ex => ({ ...ex, currentName: ex.name }))); }}>OHJELMA A</button>
-        <button className={currentTab === 'B' ? 'active' : ''} onClick={() => { setCurrentTab('B'); setExercises(WORKOUT_DATA.B.map(ex => ({ ...ex, currentName: ex.name }))); }}>OHJELMA B</button>
+        {['A', 'B', 'C'].map(tab => (
+          <button key={tab} className={currentTab === tab ? 'active' : ''} onClick={() => { setCurrentTab(tab); setExercises(WORKOUT_DATA[tab].map(ex => ({ ...ex, currentName: ex.name }))); }}>OHJELMA {tab}</button>
+        ))}
       </div>
       {loading ? <div className="exercise-card"><h2>Ladataan historiaa...</h2></div> : (
         <div className="bento-grid">
