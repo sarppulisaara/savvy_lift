@@ -276,7 +276,7 @@ function App() {
   const [sheetsHistory, setSheetsHistory] = useState([]);
   const [showAddExercise, setShowAddExercise] = useState(false);
   
-  const API_URL = "https://script.google.com/macros/s/AKfycbx0hFtXKOVPLViTVm9vJVFxgauqNGaJasnyybPdYO8Wo0B8rNStPR-TbMPBDh7M7xR8/exec"; 
+  const API_URL = "https://script.google.com/macros/s/AKfycbzuHP8Yn-MJz7TuMeqK1O8XeCYSzJZ3jlIfxx5d0F0EuWxp-THxOhAK-kTHsqcu8TGQ/exec"; 
 
   useEffect(() => {
     fetch(API_URL)

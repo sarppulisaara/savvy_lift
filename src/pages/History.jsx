@@ -85,7 +85,7 @@ function History() {
   const [exercises, setExercises] = useState(WORKOUT_DATA.A.map(ex => ({ ...ex, currentName: ex.name })));
   const [sheetsHistory, setSheetsHistory] = useState([]);
   const [loading, setLoading] = useState(true);
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx0hFtXKOVPLViTVm9vJVFxgauqNGaJasnyybPdYO8Wo0B8rNStPR-TbMPBDh7M7xR8/exec";
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzuHP8Yn-MJz7TuMeqK1O8XeCYSzJZ3jlIfxx5d0F0EuWxp-THxOhAK-kTHsqcu8TGQ/exec;
 
   useEffect(() => {
     fetch(SCRIPT_URL)
