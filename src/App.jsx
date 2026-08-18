@@ -4,42 +4,50 @@ import './App.css';
 const DRAFT_KEY = 'savvy_lift_active_workout';
 
 const EXERCISE_DICTIONARY = {
-  'Smith Bulgarian Split Squat': ['Smith bulgarialainen', 'Bulgarian Smith', 'Smith bulgarian split'],
+  'Smith Bulgarian Split Squat': ['Smith bulgarialainen', 'Bulgarian Smith', 'Smith bulgarian split', 'Bulgarialainen', 'Bulgarian'],
   'Bulgarian Split Squat käsipainoilla': ['Bulgarialainen käsipainoilla', 'DB Bulgarian split squat'],
-  'Jalkaprässi (pystysuora / 45°)': ['45-asteen prässi', '45 asteen prässi', 'Pystyprässi'],
   'Jalkaprässi – vaakaprässi': ['Vaakaprässi', 'Jalkaprässi vaakatasossa'],
-  'Lantionnosto tangolla': ['Barbell hip thrust', 'Hip thrust tanko'],
-  'Glute Drive': ['Booty Builder laite', 'Lantionnosto laite'],
-  'Lantionnosto käsipainoilla': ['Hip thrust kp', 'Lantionnosto kp'],
+  'Jalkaprässi (pystysuora / 45°)': ['45-asteen prässi', '45 asteen prässi', 'Pystyprässi'],
+  'Vertical Row': ['Vertical Row machine', 'Pystysoutu laite'],
+  'Low Row (kaapeli)': ['Alasoutu kaapeli', 'Kaapelisoutu', 'Alasoutu laite'],
+  'Chest Press (laite) Lucas': ['Chest Press machine', 'Rintapunnerrus laite'],
   'Chest Press (laite)': ['Chest Press machine', 'Rintapunnerrus laite'],
-  'Penkkipunnerrus käsipainoilla': ['Käsipainopenkki', 'DB bench press'],
   'Vinopenkki laitteessa': ['Vinopenkki laite', 'Incline press machine'],
   'Pec Deck': ['Pecdeck', 'Rintapekki'],
-  'Low Row (kaapeli)': ['Alasoutu kaapeli', 'Kaapelisoutu', 'Alasoutu laite'],
-  'Lat Pulldown': ['Ylätalja', 'Ylätalja leveä'],
-  'Vertical Row': ['Vertical Row machine', 'Pystysoutu laite'],
-  'Yhden käden soutu käsipainoilla': ['Yhden käden soutu kp', 'One arm row DB', 'Yhden käden kulmasoutu'],
+  'Arnold Press': ['Arnold pystypunnerrus'],
+  'Pystypunnerrus laitteessa': ['Shoulder press machine', 'Pystypunnerruslaite'],
+  'Pystypunnerrus käsipainoilla': ['Pystypunnerrus kp', 'Dumbbell shoulder press'],
+  'Vipunostot sivulle': ['Lateral raise machine', 'Sivuvivut laite'],
+  'Vipunostot käsipainoilla': ['Vipunostot kp', 'Lateral raise DB'],
+  'Pystysoutu leveällä': ['Pystysoutu levytangolla', 'Upright row wide'],
+  'Hammer Curl': ['Hauiskääntö hammer', 'Hammer hauis'],
+  'Hauiskääntö käsipainoilla': ['Hauiskääntö kp', 'Dumbbell curl'],
+  'Push Down': ['Ojentajapunnerrus taljassa', 'Pushdown'],
+  'Ojentajat käsipainoilla': ['Ojentajapunnerrus kp', 'Triceps extension DB'],
+  'Reiden loitonnus (abductor)': ['Abductor machine', 'Loitonnuslaite'],
+  'Reiden lähennys (adductor)': ['Adductor machine', 'Lähennyslaite'],
+  'Vatsarutistus laitteessa': ['Vatsarutistuslaite', 'Ab crunch machine'],
+  'Lankku': ['Plank static'],
+  'Glute Drive': ['Booty Builder laite', 'Lantionnosto laite'],
+  'Lantionnosto käsipainoilla': ['Hip thrust kp', 'Lantionnosto kp'],
   'Reiden ojennus': ['Leg extension machine', 'Reisiojennus'],
   'Reiden koukistus': ['Leg curl machine', 'Reisikoukistus'],
-  'SJMV': ['Suorin jaloin maastaveto kp', 'RDL', 'Suorin jaloin maastaveto'],
-  'Selänojennus lisäpainolla': ['Hyperextension weighted', 'Selänojennus lisäpainolla'],
-  'Yhden käden pystypunnerrus istuen': ['Istuen yhden käden pystypunnerrus kp', 'DB single arm shoulder press'],
-  'Arnold Press': ['Arnold pystypunnerrus'],
-  'Pystypunnerrus käsipainoilla': ['Pystypunnerrus kp', 'Dumbbell shoulder press'],
-  'Vipunostot sivulle': ['Lateral raise machine', 'Sivuvivut laite', 'Vipunostot sivulle kp'],
+  'Lat Pulldown': ['Ylätalja', 'Ylätalja leveä'],
+  'SJMV': ['Suorin jaloin maastaveto kp', 'RDL'],
+  'Penkkipunnerrus käsipainoilla': ['Käsipainopenkki', 'DB bench press'],
+  'Yhden käden soutu käsipainoilla': ['Yhden käden soutu kp', 'One arm row DB'],
+  'Askelkyykky käsipainoilla': ['Askelkyykky kp', 'Dumbbell lunge'],
+  'Vatsarutistus jumppapallolla': ['Swiss ball crunch', 'Crunch jumppapallolla'],
+  'Jalkojen nostot selinmakuulla': ['Leg raise', 'Leg raises'],
+  'Russian twist': ['Russian twists'],
+  'Istumaannousu lisäpainon kanssa': ['Weighted sit up', 'Sit up lisäpainolla'],
   'Face Pull': ['Face pull', 'Facepull', 'Kasvoveto taljassa'],
   'Takaolkapäät laitteessa': ['Reverse pec deck', 'Takaolkapäälaite'],
   'Vipunostot taakse': ['Reverse fly käsipainoilla', 'Takaolkapääviparit'],
-  'Push Down': ['Ojentajapunnerrus taljassa', 'Pushdown'],
-  'Ojentajat käsipainoilla': ['Ojentajapunnerrus kp', 'Triceps extension DB'],
-  'Russian twist': ['Russian twists'],
-  'Voimapyörä': ['Ab roller', 'Ab wheel'],
-  'Dead Bug': ['Kuollut ötökkä'],
-  'Jalkojen nostot selinmakuulla': ['Leg raise', 'Leg raises'],
-  'Vatsarutistus jumppapallolla': ['Swiss ball crunch', 'Crunch jumppapallolla'],
-  'Istumaannousu lisäpainon kanssa': ['Weighted sit up', 'Sit up lisäpainolla']
+  'Reverse Fly': ['Reverse fly', 'Takaolkapää reverse fly']
 };
 
+// MUUTETTU VAIN TREENIRAKENNE: A/B -> A/B/C
 const WORKOUT_DATA = {
   A: [
     {
@@ -273,7 +281,7 @@ function App() {
   useEffect(() => {
     fetch(API_URL)
       .then(res => res.json())
-      .then(data => setSheetsHistory(data))
+      .then(data => setSheetsHistory(Array.isArray(data) ? data : []))
       .catch(err => console.error(err));
   }, []);
 
@@ -294,7 +302,7 @@ function App() {
     const searchTerms = [name, ...aliases].map(n => n.toLowerCase().trim());
 
     const relevant = sheetsHistory.filter(h => {
-      const rawName = h.Liike || h.liike || h.exercisename || h.exerciseName || "";
+      const rawName = h.exercisename || h.Liike || h.liike || h.exerciseName || h.ExerciseName || "";
       const hName = String(rawName).toLowerCase().trim();
       return searchTerms.some(term => hName === term || hName.includes(term));
     });
@@ -302,9 +310,9 @@ function App() {
     if (relevant.length === 0) return { text: "Ei historiaa", status: 'normal' };
 
     const last = relevant[relevant.length - 1];
-    const w = parseNum(last.Paino || last.paino || last.s1_weight);
-    const r = parseNum(last.Toistot || last.toistot || last.s1_reps);
-    const maxR = parseInt(range.split('-').pop(), 10);
+    const w = parseNum(last.s1_weight || last.Paino || last.paino || last.Weight);
+    const r = parseNum(last.s1_reps || last.Toistot || last.toistot || last.Reps);
+    const maxR = parseInt(String(range).split('-').pop(), 10);
 
     if (w === 0) return { text: "Viimeksi: -", status: 'normal' };
 
