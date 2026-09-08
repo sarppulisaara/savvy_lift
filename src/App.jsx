@@ -32,7 +32,8 @@ const EXERCISE_DICTIONARY = {
   'Lantionnosto käsipainoilla': ['Hip thrust kp', 'Lantionnosto kp'],
   'Reiden ojennus': ['Leg extension machine', 'Reisiojennus'],
   'Reiden koukistus': ['Leg curl machine', 'Reisikoukistus'],
-  'Lat Pulldown': ['Ylätalja', 'Ylätalja leveä'],
+  'Lat Pulldown (laite)': ['Ylätalja', 'Ylätalja laite'],
+  'Lat Pulldown (kaapeli)': ['Ylätalja kaapeli', 'Kaapeliylätalja', 'Ylätalja leveä'],
   'SJMV': ['Suorin jaloin maastaveto kp', 'RDL'],
   'Penkkipunnerrus käsipainoilla': ['Käsipainopenkki', 'DB bench press'],
   'Yhden käden soutu käsipainoilla': ['Yhden käden soutu kp', 'One arm row DB'],
@@ -141,9 +142,10 @@ const WORKOUT_DATA = {
     },
     {
       id: 'b3',
-      name: 'Lat Pulldown',
+      name: 'Lat Pulldown (laite)',
       muscle: 'Selkä',
       alternatives: [
+        'Lat Pulldown (kaapeli)',
         'Vertical Row',
         'Low Row (kaapeli)',
         'Yhden käden soutu käsipainoilla'
@@ -213,7 +215,8 @@ const WORKOUT_DATA = {
       muscle: 'Selkä',
       alternatives: [
         'Low Row (kaapeli)',
-        'Lat Pulldown',
+        'Lat Pulldown (laite)',
+        'Lat Pulldown (kaapeli)',
         'Yhden käden soutu käsipainoilla'
       ],
       targetReps: '8-10',
