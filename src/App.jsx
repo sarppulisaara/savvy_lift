@@ -268,15 +268,58 @@ const WORKOUT_DATA = {
   ]
 };
 
-const EXERCISE_BANK = [
-  ...WORKOUT_DATA.A,
-  ...WORKOUT_DATA.B,
-  ...WORKOUT_DATA.C,
-  { name: 'Push Down', muscle: 'Ojentajat', targetReps: '12-15', increment: 2.5, alternatives: ['Ojentajat käsipainoilla'] },
-  { name: 'Reiden ojennus', muscle: 'Etureidet', targetReps: '12-15', increment: 2.5, alternatives: ['Jalkaprässi – vaakaprässi'] },
-  { name: 'Reiden loitonnus (abductor)', muscle: 'Lantio', targetReps: '12-15', increment: 5.0, alternatives: ['Reiden lähennys (adductor)'] },
-  { name: 'Reiden lähennys (adductor)', muscle: 'Lantio', targetReps: '12-15', increment: 5.0, alternatives: ['Reiden loitonnus (abductor)'] }
+// Liikkeitä jotka eivät ole minkään treenipäivän pääliike, mutta löytyvät silti
+// "+ LISÄÄ LIIKE" -valikosta. Lisää tähän uusia rivejä sitä mukaa kun liikkeitä tulee lisää.
+const EXTRA_EXERCISES = [
+  { name: 'Bulgarian Split Squat käsipainoilla', muscle: 'Jalat', targetReps: '6-8', increment: 2.5 },
+  { name: 'Askelkyykky käsipainoilla', muscle: 'Jalat', targetReps: '8-10', increment: 2.5 },
+  { name: 'Jalkaprässi – vaakaprässi', muscle: 'Jalat', targetReps: '8-10', increment: 5.0 },
+  { name: 'Reiden loitonnus (abductor)', muscle: 'Lantio', targetReps: '12-15', increment: 5.0 },
+  { name: 'Reiden lähennys (adductor)', muscle: 'Lantio', targetReps: '12-15', increment: 5.0 },
+  { name: 'Lantionnosto tangolla', muscle: 'Pakarat', targetReps: '6-8', increment: 5.0 },
+  { name: 'Lantionnosto käsipainoilla', muscle: 'Pakarat', targetReps: '8-10', increment: 2.5 },
+  { name: 'Penkkipunnerrus käsipainoilla', muscle: 'Rinta', targetReps: '6-8', increment: 2.5 },
+  { name: 'Pec Deck', muscle: 'Rinta', targetReps: '10-12', increment: 2.5 },
+  { name: 'Lat Pulldown (kaapeli)', muscle: 'Selkä', targetReps: '6-8', increment: 2.5 },
+  { name: 'Yhden käden soutu käsipainoilla', muscle: 'Selkä', targetReps: '8-10', increment: 2.5 },
+  { name: 'Selänojennus lisäpainolla', muscle: 'Alaselkä', targetReps: '10-15', increment: 2.5 },
+  { name: 'Arnold Press', muscle: 'Olkapäät', targetReps: '8-10', increment: 1.0 },
+  { name: 'Pystypunnerrus käsipainoilla', muscle: 'Olkapäät', targetReps: '8-10', increment: 1.0 },
+  { name: 'Pystypunnerrus laitteessa', muscle: 'Olkapäät', targetReps: '8-10', increment: 1.0 },
+  { name: 'Vipunostot käsipainoilla', muscle: 'Olkapäät', targetReps: '12-15', increment: 0.5 },
+  { name: 'Pystysoutu leveällä', muscle: 'Olkapäät', targetReps: '12-15', increment: 1.0 },
+  { name: 'Takaolkapäät laitteessa', muscle: 'Takaolkapää', targetReps: '12-15', increment: 1.0 },
+  { name: 'Vipunostot taakse', muscle: 'Takaolkapää', targetReps: '12-15', increment: 1.0 },
+  { name: 'Reverse Fly', muscle: 'Takaolkapää', targetReps: '12-15', increment: 1.0 },
+  { name: 'Hammer Curl', muscle: 'Hauis', targetReps: '10-12', increment: 1.0 },
+  { name: 'Hauiskääntö käsipainoilla', muscle: 'Hauis', targetReps: '10-12', increment: 1.0 },
+  { name: 'Ojentajat käsipainoilla', muscle: 'Ojentajat', targetReps: '12-15', increment: 1.0 },
+  { name: 'Vatsarutistus laitteessa', muscle: 'Core', targetReps: '12-15', increment: 2.5 },
+  { name: 'Vatsarutistus jumppapallolla', muscle: 'Core', targetReps: '12-20', increment: 1.0 },
+  { name: 'Istumaannousu lisäpainon kanssa', muscle: 'Core', targetReps: '12-20', increment: 2.5 },
+  { name: 'Lankku', muscle: 'Core', targetReps: '20-40', increment: 0 },
+  { name: 'Dead Bug', muscle: 'Core', targetReps: '10-15', increment: 0 }
 ];
+
+// Kaikki tunnetut liikkeet (treenipäivien pääliikkeet + yllä olevat lisäliikkeet) yhteen
+// listaan koottuna, treenipäivien versiot ovat aina totuuden lähde (mm. niiden omat SWAP-vaihtoehdot säilyvät).
+const ALL_EXERCISES = (() => {
+  const byName = new Map();
+  [...WORKOUT_DATA.A, ...WORKOUT_DATA.B, ...WORKOUT_DATA.C].forEach(ex => {
+    byName.set(ex.name, { name: ex.name, muscle: ex.muscle, targetReps: ex.targetReps, increment: ex.increment, alternatives: ex.alternatives || [] });
+  });
+  EXTRA_EXERCISES.forEach(ex => {
+    if (!byName.has(ex.name)) byName.set(ex.name, { ...ex, alternatives: ex.alternatives || [] });
+  });
+  return Array.from(byName.values());
+})();
+
+const MUSCLE_ORDER = ['Jalat', 'Pakarat', 'Lantio', 'Rinta', 'Selkä', 'Takaketju', 'Alaselkä', 'Olkapäät', 'Takaolkapää', 'Hauis', 'Ojentajat', 'Core'];
+
+// Liikkeet ryhmiteltynä lihasryhmittäin "+ LISÄÄ LIIKE" -valikon osioita varten
+const EXERCISE_GROUPS = MUSCLE_ORDER
+  .map(muscle => ({ muscle, exercises: ALL_EXERCISES.filter(ex => ex.muscle === muscle) }))
+  .filter(group => group.exercises.length > 0);
 
 function App() {
   const [activeWorkout, setActiveWorkout] = useState(() => {
@@ -288,6 +331,7 @@ function App() {
 
   const [sheetsHistory, setSheetsHistory] = useState([]);
   const [showAddExercise, setShowAddExercise] = useState(false);
+  const [expandedMuscle, setExpandedMuscle] = useState(null);
   
   const API_URL = "https://script.google.com/macros/s/AKfycbztsRf-a7P1H29fxHOX3xy_ydwWN_RiX9qbGlGlb7EXEbkduJrdKwYOPjVOQXc3Qyp-/exec";
 
@@ -359,6 +403,7 @@ function App() {
     };
     setActiveWorkout(p => ({ ...p, exercises: [...p.exercises, newEx] }));
     setShowAddExercise(false);
+    setExpandedMuscle(null);
   };
 
   if (!activeWorkout) {
@@ -443,11 +488,26 @@ function App() {
         {showAddExercise && (
           <div className="exercise-card" style={{marginTop: 20}}>
              <h2 className="exercise-title">Valitse uusi liike:</h2>
-             <div style={{display: 'flex', flexDirection: 'column', gap: 10, marginTop: 15}}>
-               {EXERCISE_BANK.map(b => (
-                 <button key={b.name} className="add-set-pill" onClick={() => addExercise(b)}>{b.name}</button>
+             <div style={{display: 'flex', flexDirection: 'column', gap: 8, marginTop: 15}}>
+               {EXERCISE_GROUPS.map(group => (
+                 <div key={group.muscle}>
+                   <button
+                     className="add-set-pill"
+                     style={{width: '100%', textAlign: 'left', fontWeight: 700}}
+                     onClick={() => setExpandedMuscle(m => m === group.muscle ? null : group.muscle)}
+                   >
+                     {expandedMuscle === group.muscle ? '▾' : '▸'} {group.muscle} ({group.exercises.length})
+                   </button>
+                   {expandedMuscle === group.muscle && (
+                     <div style={{display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8, marginLeft: 12}}>
+                       {group.exercises.map(ex => (
+                         <button key={ex.name} className="add-set-pill" onClick={() => addExercise(ex)}>{ex.name}</button>
+                       ))}
+                     </div>
+                   )}
+                 </div>
                ))}
-               <button className="cancel-btn" style={{position: 'static', width: '100%', marginTop: 10}} onClick={() => setShowAddExercise(false)}>PERU</button>
+               <button className="cancel-btn" style={{position: 'static', width: '100%', marginTop: 10}} onClick={() => { setShowAddExercise(false); setExpandedMuscle(null); }}>PERU</button>
              </div>
           </div>
         )}
