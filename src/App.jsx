@@ -159,7 +159,8 @@ const WORKOUT_DATA = {
       muscle: 'Olkapäät',
       alternatives: [
         'Arnold Press',
-        'Pystypunnerrus käsipainoilla'
+        'Pystypunnerrus käsipainoilla',
+        'Penkkipunnerrus käsipainoilla'
       ],
       targetReps: '8-10',
       increment: 1.0
