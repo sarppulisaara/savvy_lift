@@ -164,16 +164,6 @@ const WORKOUT_DATA = {
     },
     {
       id: 'b5',
-      name: 'Reiden koukistus',
-      muscle: 'Takareidet',
-      alternatives: [
-        'SJMV'
-      ],
-      targetReps: '10-12',
-      increment: 2.5
-    },
-    {
-      id: 'b6',
       name: 'Voimapyörä',
       muscle: 'Core',
       alternatives: [
@@ -181,6 +171,16 @@ const WORKOUT_DATA = {
       ],
       targetReps: '10-15',
       increment: 1.0
+    },
+    {
+      id: 'b6',
+      name: 'Selänojennus lisäpainolla',
+      muscle: 'Alaselkä',
+      alternatives: [
+        'Lankku'
+      ],
+      targetReps: '10-15',
+      increment: 2.5
     }
   ],
 
@@ -190,8 +190,7 @@ const WORKOUT_DATA = {
       name: 'SJMV',
       muscle: 'Takaketju',
       alternatives: [
-        'Selänojennus lisäpainolla',
-        'Reiden koukistus'
+        'Selänojennus lisäpainolla'
       ],
       targetReps: '8-10',
       increment: 5.0
@@ -251,6 +250,16 @@ const WORKOUT_DATA = {
       ],
       targetReps: '10-15',
       increment: 1.0
+    },
+    {
+      id: 'c7',
+      name: 'Reiden koukistus',
+      muscle: 'Takareidet',
+      alternatives: [
+        'SJMV'
+      ],
+      targetReps: '10-12',
+      increment: 2.5
     }
   ]
 };
