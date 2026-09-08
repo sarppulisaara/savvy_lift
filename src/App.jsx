@@ -459,11 +459,17 @@ function App() {
         });
 
         try {
-          await fetch(API_URL, { method: "POST", mode: 'no-cors', body: JSON.stringify(payload) });
+          const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+          const text = await res.text();
+          if (!res.ok || !text.includes("Success")) {
+            throw new Error(text || `HTTP ${res.status}`);
+          }
           alert("Tallennettu!");
           localStorage.removeItem(DRAFT_KEY);
           setActiveWorkout(null);
-        } catch (e) { alert("Virhe!"); }
+        } catch (e) {
+          alert("Tallennus epäonnistui! Treeni EI kadonnut — se on yhä tallessa täällä puhelimessasi, ja voit yrittää tallentaa uudelleen (esim. paremmalla verkolla). Virhe: " + e.message);
+        }
       }}>TALLENNA TREENI</button>
     </div>
   );
