@@ -174,16 +174,6 @@ const WORKOUT_DATA = {
       ],
       targetReps: '10-15',
       increment: 1.0
-    },
-    {
-      id: 'b6',
-      name: 'Selänojennus lisäpainolla',
-      muscle: 'Alaselkä',
-      alternatives: [
-        'Lankku'
-      ],
-      targetReps: '10-15',
-      increment: 2.5
     }
   ],
 
@@ -193,7 +183,8 @@ const WORKOUT_DATA = {
       name: 'SJMV',
       muscle: 'Takaketju',
       alternatives: [
-        'Selänojennus lisäpainolla'
+        'Selänojennus lisäpainolla',
+        'Reiden koukistus'
       ],
       targetReps: '8-10',
       increment: 5.0
@@ -254,16 +245,6 @@ const WORKOUT_DATA = {
       ],
       targetReps: '10-15',
       increment: 1.0
-    },
-    {
-      id: 'c7',
-      name: 'Reiden koukistus',
-      muscle: 'Takareidet',
-      alternatives: [
-        'SJMV'
-      ],
-      targetReps: '10-12',
-      increment: 2.5
     }
   ]
 };
@@ -278,6 +259,7 @@ const EXTRA_EXERCISES = [
   { name: 'Reiden lähennys (adductor)', muscle: 'Lantio', targetReps: '12-15', increment: 5.0 },
   { name: 'Lantionnosto tangolla', muscle: 'Pakarat', targetReps: '6-8', increment: 5.0 },
   { name: 'Lantionnosto käsipainoilla', muscle: 'Pakarat', targetReps: '8-10', increment: 2.5 },
+  { name: 'Reiden koukistus', muscle: 'Takareidet', targetReps: '10-12', increment: 2.5 },
   { name: 'Penkkipunnerrus käsipainoilla', muscle: 'Rinta', targetReps: '6-8', increment: 2.5 },
   { name: 'Pec Deck', muscle: 'Rinta', targetReps: '10-12', increment: 2.5 },
   { name: 'Lat Pulldown (kaapeli)', muscle: 'Selkä', targetReps: '6-8', increment: 2.5 },
@@ -367,8 +349,25 @@ function App() {
     if (relevant.length === 0) return { text: "Ei historiaa", status: 'normal' };
 
     const last = relevant[relevant.length - 1];
-    const w = parseNum(last.s1_weight || last.Paino || last.paino || last.Weight);
-    const r = parseNum(last.s1_reps || last.Toistot || last.toistot || last.Reps);
+
+    // Käydään läpi viimeisimmän kerran KAIKKI sarjat (s1-s5) ja otetaan se sarja jossa
+    // oli suurin paino (ei aina pelkkää ensimmäistä sarjaa, joka on usein lämmittelypaino).
+    let w = 0;
+    let r = 0;
+    for (let i = 1; i <= 5; i++) {
+      const setWeight = parseNum(last[`s${i}_weight`]);
+      const setReps = parseNum(last[`s${i}_reps`]);
+      if (setWeight > w) {
+        w = setWeight;
+        r = setReps;
+      }
+    }
+    // Fallback vanhempaan/yleiseen rivimuotoon jos s-sarakkeita ei löytynyt ollenkaan
+    if (w === 0) {
+      w = parseNum(last.Paino || last.paino || last.Weight);
+      r = parseNum(last.Toistot || last.toistot || last.Reps);
+    }
+
     const maxR = parseInt(String(range).split('-').pop(), 10);
 
     if (w === 0) return { text: "Viimeksi: -", status: 'normal' };
