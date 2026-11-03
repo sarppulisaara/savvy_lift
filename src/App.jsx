@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import './App.css'; 
+import './App.css';
+import { getRecommendation as getRecommendationFromHistory } from './recommendation.js';
+import { getWeekSummary, getProgress, getLastNote, formatDate } from './stats.js';
+import WeekView from './WeekView';
+import ProgressChart from './ProgressChart';
 
 const DRAFT_KEY = 'savvy_lift_active_workout';
 
@@ -298,8 +302,13 @@ const ALL_EXERCISES = (() => {
 
 const MUSCLE_ORDER = ['Jalat', 'Pakarat', 'Lantio', 'Rinta', 'Selkä', 'Takaketju', 'Alaselkä', 'Olkapäät', 'Takaolkapää', 'Hauis', 'Ojentajat', 'Core'];
 
-// Liikkeet ryhmiteltynä lihasryhmittäin "+ LISÄÄ LIIKE" -valikon osioita varten
-const EXERCISE_GROUPS = MUSCLE_ORDER
+// Liikkeet ryhmiteltynä lihasryhmittäin "+ LISÄÄ LIIKE" -valikon osioita varten.
+// Lihasryhmät, joita ei ole MUSCLE_ORDERissa (esim. Etureidet, Takareidet), tulevat
+// listan loppuun, jotta mikään liike ei jää valikosta pois.
+const EXERCISE_GROUPS = [
+  ...MUSCLE_ORDER,
+  ...[...new Set(ALL_EXERCISES.map(ex => ex.muscle))].filter(m => !MUSCLE_ORDER.includes(m))
+]
   .map(muscle => ({ muscle, exercises: ALL_EXERCISES.filter(ex => ex.muscle === muscle) }))
   .filter(group => group.exercises.length > 0);
 
@@ -314,7 +323,9 @@ function App() {
   const [sheetsHistory, setSheetsHistory] = useState([]);
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [expandedMuscle, setExpandedMuscle] = useState(null);
-  
+  const [chartFor, setChartFor] = useState(null);   // liikkeen nimi, jonka kehityskäyrä on auki
+  const [showWeek, setShowWeek] = useState(false);  // viikkonäkymä treenin aikana
+
   const API_URL = "https://script.google.com/macros/s/AKfycbztsRf-a7P1H29fxHOX3xy_ydwWN_RiX9qbGlGlb7EXEbkduJrdKwYOPjVOQXc3Qyp-/exec";
 
   useEffect(() => {
@@ -330,52 +341,20 @@ function App() {
     }
   }, [activeWorkout]);
 
-  const parseNum = (val) => {
-    if (!val) return 0;
-    const n = parseFloat(String(val).replace("'", "").replace(',', '.').trim());
-    return isNaN(n) ? 0 : n;
-  };
+  // Suosituslogiikka on omassa tiedostossaan (src/recommendation.js), jotta sen voi
+  // testata erikseen historiaa vasten. Se vain lukee historiaa eikä muuta mitään.
+  const getRecommendation = (name, range, obj) =>
+    getRecommendationFromHistory(sheetsHistory, name, range, obj.increment, EXERCISE_DICTIONARY);
 
-  const getRecommendation = (name, range, obj) => {
-    const aliases = EXERCISE_DICTIONARY[name] || [];
-    const searchTerms = [name, ...aliases].map(n => n.toLowerCase().trim());
+  const weekSummary = getWeekSummary(sheetsHistory, ALL_EXERCISES, EXERCISE_DICTIONARY, activeWorkout);
 
-    const relevant = sheetsHistory.filter(h => {
-      const rawName = h.exercisename || h.Liike || h.liike || h.exerciseName || h.ExerciseName || "";
-      const hName = String(rawName).toLowerCase().trim();
-      return searchTerms.some(term => hName === term || hName.includes(term));
-    });
-
-    if (relevant.length === 0) return { text: "Ei historiaa", status: 'normal' };
-
-    const last = relevant[relevant.length - 1];
-
-    // Käydään läpi viimeisimmän kerran KAIKKI sarjat (s1-s5) ja otetaan se sarja jossa
-    // oli suurin paino (ei aina pelkkää ensimmäistä sarjaa, joka on usein lämmittelypaino).
-    let w = 0;
-    let r = 0;
-    for (let i = 1; i <= 5; i++) {
-      const setWeight = parseNum(last[`s${i}_weight`]);
-      const setReps = parseNum(last[`s${i}_reps`]);
-      if (setWeight > w) {
-        w = setWeight;
-        r = setReps;
-      }
-    }
-    // Fallback vanhempaan/yleiseen rivimuotoon jos s-sarakkeita ei löytynyt ollenkaan
-    if (w === 0) {
-      w = parseNum(last.Paino || last.paino || last.Weight);
-      r = parseNum(last.Toistot || last.toistot || last.Reps);
-    }
-
-    const maxR = parseInt(String(range).split('-').pop(), 10);
-
-    if (w === 0) return { text: "Viimeksi: -", status: 'normal' };
-
-    return r >= maxR
-      ? { text: `Suositus: ${(w + obj.increment).toFixed(1).replace('.0', '')}kg (Viimeksi ${w}kg x ${r})`, status: 'level-up' }
-      : { text: `Viimeksi: ${w}kg x ${r}`, status: 'normal' };
-  };
+  const chartModal = chartFor && (
+    <ProgressChart
+      name={chartFor}
+      progress={getProgress(sheetsHistory, chartFor, EXERCISE_DICTIONARY)}
+      onClose={() => setChartFor(null)}
+    />
+  );
 
   const startWorkout = (type) => {
     setActiveWorkout({
@@ -414,6 +393,7 @@ function App() {
           <button className="workout-select-btn b-btn" onClick={() => startWorkout('B')}>TREENI B</button>
           <button className="workout-select-btn c-btn" onClick={() => startWorkout('C')}>TREENI C</button>
         </div>
+        <WeekView summary={weekSummary} muscleOrder={MUSCLE_ORDER} />
       </div>
     );
   }
@@ -431,8 +411,14 @@ function App() {
       </header>
 
       <main className="workout-list">
+        <button className="add-set-pill week-toggle" onClick={() => setShowWeek(s => !s)}>
+          {showWeek ? '▾' : '▸'} TÄMÄ VIIKKO
+        </button>
+        {showWeek && <WeekView summary={weekSummary} muscleOrder={MUSCLE_ORDER} compact />}
+
         {activeWorkout.exercises.map(ex => {
           const info = getRecommendation(ex.currentName, ex.targetReps, ex);
+          const lastNote = getLastNote(sheetsHistory, ex.currentName, EXERCISE_DICTIONARY);
           return (
             <div key={ex.id} className="exercise-card">
               <div className="exercise-header">
@@ -448,11 +434,15 @@ function App() {
                       ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, currentName: opts[next] } : e)
                     }));
                   }}>SWAP</button>
+                  <button className="swap-action-btn" style={{background: 'var(--bento-blue)'}} onClick={() => setChartFor(ex.currentName)}>KEHITYS</button>
                   <button className="swap-action-btn" style={{background: '#fee2e2', color: '#b91c1c'}} onClick={() => removeExercise(ex.id)}>POISTA</button>
                 </div>
               </div>
 
               <div className={`stats-hint ${info.status}`}>{info.text}</div>
+              {lastNote && (
+                <div className="last-note">📝 {formatDate(lastNote.time)}: {lastNote.note}</div>
+              )}
 
               <div className="sets-container">
                 {ex.sets.map((set, i) => (
@@ -479,6 +469,18 @@ function App() {
                   ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: [...e.sets, { weight: last.weight, reps: '' }] } : e)
                 }));
               }}>+ LISÄÄ SARJA</button>
+              <input
+                type="text"
+                className="note-input"
+                placeholder="Muistiinpano (esim. olkapää tuntui, kone varattu)"
+                value={ex.notes || ''}
+                onChange={e => {
+                  const v = e.target.value;
+                  setActiveWorkout(p => ({
+                    ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, notes: v } : e)
+                  }));
+                }}
+              />
             </div>
           );
         })}
@@ -521,6 +523,9 @@ function App() {
             musclegroup: ex.muscle,
             exercisename: ex.currentName,
           };
+          // Muistiinpano Sheetin olemassa olevaan notes-sarakkeeseen. Heittomerkki estää
+          // Sheetsiä tulkitsemasta =- tai +-alkuista tekstiä kaavaksi.
+          if (ex.notes && ex.notes.trim()) d.notes = "'" + ex.notes.trim();
           ex.sets.forEach((s, i) => {
             if (i < 5) {
               d[`s${i + 1}_reps`] = s.reps ? "'" + s.reps : "";
@@ -543,6 +548,7 @@ function App() {
           alert("Tallennus epäonnistui! Treeni EI kadonnut — se on yhä tallessa täällä puhelimessasi, ja voit yrittää tallentaa uudelleen (esim. paremmalla verkolla). Virhe: " + e.message);
         }
       }}>TALLENNA TREENI</button>
+      {chartModal}
     </div>
   );
 }

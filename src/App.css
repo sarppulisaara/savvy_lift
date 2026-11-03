@@ -200,6 +200,7 @@ body {
 }
 .stats-hint.normal { background-color: #e0e0e0; }
 .stats-hint.level-up { background-color: var(--bento-lime); }
+.stats-hint.deload { background-color: var(--bento-yellow); }
 
 .sets-container {
   display: flex;
@@ -302,3 +303,38 @@ input:focus {
 
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; appearance: none; }
+/* --- VIIKKONÄKYMÄ --- */
+.week-card { width: 100%; gap: 12px; }
+.week-card.compact { padding-top: 14px; padding-bottom: 14px; }
+.week-head { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; }
+.week-rows { display: flex; flex-direction: column; gap: 6px; width: 100%; }
+.week-row { display: grid; grid-template-columns: 96px 1fr 28px; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 700; }
+.week-row.empty { opacity: 0.45; }
+.week-muscle { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.week-bar { display: flex; height: 14px; border: 2px solid #000; border-radius: 8px; overflow: hidden; background: #fff; }
+.week-bar-saved { background: var(--bento-lime); }
+.week-bar-today { background: var(--bento-yellow); }
+.week-count { text-align: right; font-variant-numeric: tabular-nums; }
+.week-toggle { text-align: left; font-weight: 700; }
+
+/* --- KEHITYSKÄYRÄ --- */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px; z-index: 50;
+}
+.modal-card { width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto; }
+.progress-chart { width: 100%; height: auto; display: block; background: #fff; border: 2px solid #000; border-radius: 12px; }
+.chart-grid { stroke: #d4d4d4; stroke-width: 1; }
+.chart-line { fill: none; stroke: #000; stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.chart-dot { fill: var(--bento-lime); stroke: #000; stroke-width: 2; }
+.chart-label { font-size: 11px; font-weight: 700; fill: #000; font-family: 'Inter', sans-serif; }
+.chart-caption { font-size: 0.75rem; margin: 0; opacity: 0.7; }
+.chart-empty { font-size: 0.9rem; }
+.history-list { display: flex; flex-direction: column; gap: 4px; width: 100%; }
+.history-row { display: flex; gap: 12px; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px solid #e5e5e5; }
+.history-date { font-weight: 800; min-width: 44px; }
+
+/* --- MUISTIINPANOT --- */
+.last-note { font-size: 0.8rem; font-style: italic; background: #fff; border: 2px dashed #000; border-radius: 10px; padding: 6px 10px; align-self: stretch; }
+.note-input { width: 100%; border: 2px solid #000; border-radius: 12px; padding: 10px 12px; font-family: 'Inter', sans-serif; font-size: 0.9rem; background: #fff; }
