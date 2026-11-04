@@ -4,8 +4,10 @@ import { getRecommendation as getRecommendationFromHistory } from './recommendat
 import { getWeekSummary, getProgress, getLastNote, formatDate } from './stats.js';
 import WeekView from './WeekView';
 import ProgressChart from './ProgressChart';
+import { getExerciseType, parseDuration } from './exerciseTypes.js';
 
 const DRAFT_KEY = 'savvy_lift_active_workout';
+const HISTORY_CACHE_KEY = 'savvy_lift_history_cache';
 
 const EXERCISE_DICTIONARY = {
   'Smith Bulgarian Split Squat': ['Smith bulgarialainen', 'Bulgarian Smith', 'Smith bulgarian split', 'Bulgarialainen', 'Bulgarian'],
@@ -283,8 +285,8 @@ const EXTRA_EXERCISES = [
   { name: 'Vatsarutistus laitteessa', muscle: 'Core', targetReps: '12-15', increment: 2.5 },
   { name: 'Vatsarutistus jumppapallolla', muscle: 'Core', targetReps: '12-20', increment: 1.0 },
   { name: 'Istumaannousu lisäpainon kanssa', muscle: 'Core', targetReps: '12-20', increment: 2.5 },
-  { name: 'Lankku', muscle: 'Core', targetReps: '20-40', increment: 0 },
-  { name: 'Dead Bug', muscle: 'Core', targetReps: '10-15', increment: 0 }
+  { name: 'Lankku', muscle: 'Core', targetReps: '30-60', increment: 0 }, // aika sekunteina
+  { name: 'Dead Bug', muscle: 'Core', targetReps: '20-30', increment: 0 }
 ];
 
 // Kaikki tunnetut liikkeet (treenipäivien pääliikkeet + yllä olevat lisäliikkeet) yhteen
@@ -320,7 +322,14 @@ function App() {
     } catch { return null; }
   });
 
-  const [sheetsHistory, setSheetsHistory] = useState([]);
+  // Historia näytetään heti puhelimen välimuistista, ja tuore versio haetaan Sheetistä taustalla.
+  const [sheetsHistory, setSheetsHistory] = useState(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem(HISTORY_CACHE_KEY) || '[]');
+      return Array.isArray(cached) ? cached : [];
+    } catch { return []; }
+  });
+  const [historyLoading, setHistoryLoading] = useState(true);
   const [showAddExercise, setShowAddExercise] = useState(false);
   const [expandedMuscle, setExpandedMuscle] = useState(null);
   const [chartFor, setChartFor] = useState(null);   // liikkeen nimi, jonka kehityskäyrä on auki
@@ -331,7 +340,12 @@ function App() {
   useEffect(() => {
     fetch(API_URL)
       .then(res => res.json())
-      .then(data => setSheetsHistory(Array.isArray(data) ? data : []))
+      .then(data => {
+        const rows = Array.isArray(data) ? data : [];
+        setSheetsHistory(rows);
+        try { localStorage.setItem(HISTORY_CACHE_KEY, JSON.stringify(rows)); } catch { /* välimuisti ei pakollinen */ }
+      })
+      .finally(() => setHistoryLoading(false))
       .catch(err => console.error(err));
   }, []);
 
@@ -344,7 +358,7 @@ function App() {
   // Suosituslogiikka on omassa tiedostossaan (src/recommendation.js), jotta sen voi
   // testata erikseen historiaa vasten. Se vain lukee historiaa eikä muuta mitään.
   const getRecommendation = (name, range, obj) =>
-    getRecommendationFromHistory(sheetsHistory, name, range, obj.increment, EXERCISE_DICTIONARY);
+    getRecommendationFromHistory(sheetsHistory, name, range, obj.increment, EXERCISE_DICTIONARY, Date.now(), getExerciseType(name));
 
   const weekSummary = getWeekSummary(sheetsHistory, ALL_EXERCISES, EXERCISE_DICTIONARY, activeWorkout);
 
@@ -352,6 +366,7 @@ function App() {
     <ProgressChart
       name={chartFor}
       progress={getProgress(sheetsHistory, chartFor, EXERCISE_DICTIONARY)}
+      type={getExerciseType(chartFor)}
       onClose={() => setChartFor(null)}
     />
   );
@@ -393,7 +408,7 @@ function App() {
           <button className="workout-select-btn b-btn" onClick={() => startWorkout('B')}>TREENI B</button>
           <button className="workout-select-btn c-btn" onClick={() => startWorkout('C')}>TREENI C</button>
         </div>
-        <WeekView summary={weekSummary} muscleOrder={MUSCLE_ORDER} />
+        <WeekView summary={weekSummary} muscleOrder={MUSCLE_ORDER} loading={historyLoading} />
       </div>
     );
   }
@@ -414,11 +429,14 @@ function App() {
         <button className="add-set-pill week-toggle" onClick={() => setShowWeek(s => !s)}>
           {showWeek ? '▾' : '▸'} TÄMÄ VIIKKO
         </button>
-        {showWeek && <WeekView summary={weekSummary} muscleOrder={MUSCLE_ORDER} compact />}
+        {showWeek && <WeekView summary={weekSummary} muscleOrder={MUSCLE_ORDER} loading={historyLoading} compact />}
 
         {activeWorkout.exercises.map(ex => {
           const info = getRecommendation(ex.currentName, ex.targetReps, ex);
           const lastNote = getLastNote(sheetsHistory, ex.currentName, EXERCISE_DICTIONARY);
+          const exType = getExerciseType(ex.currentName);
+          // Kehonpaino- ja aikaliikkeissä kg-kenttä näkyy vain, jos lisäpaino on otettu käyttöön.
+          const showWeight = exType === 'weight' || ex.extraLoad || ex.sets.some(s => s.weight !== '' && s.weight !== undefined);
           return (
             <div key={ex.id} className="exercise-card">
               <div className="exercise-header">
@@ -448,18 +466,31 @@ function App() {
                 {ex.sets.map((set, i) => (
                   <div key={i} className="set-row-pill">
                     <span className="set-num">{i + 1}.</span>
-                    <input type="number" step="any" placeholder="kg" value={set.weight} onChange={e => {
-                      const v = e.target.value;
-                      setActiveWorkout(p => ({
-                        ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, weight: v } : s) } : e)
-                      }));
-                    }}/>
-                    <input type="number" placeholder="reps" value={set.reps} onChange={e => {
-                      const v = e.target.value;
-                      setActiveWorkout(p => ({
-                        ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, reps: v } : s) } : e)
-                      }));
-                    }}/>
+                    {showWeight && (
+                      <input type="number" step="any" placeholder={exType === 'weight' ? 'kg' : '+kg'} value={set.weight} onChange={e => {
+                        const v = e.target.value;
+                        setActiveWorkout(p => ({
+                          ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, weight: v } : s) } : e)
+                        }));
+                      }}/>
+                    )}
+                    {exType === 'time' ? (
+                      <input type="text" inputMode="decimal" placeholder="0:45"
+                        className={set.reps && parseDuration(set.reps) === null ? 'input-invalid' : ''}
+                        value={set.reps} onChange={e => {
+                        const v = e.target.value;
+                        setActiveWorkout(p => ({
+                          ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, reps: v } : s) } : e)
+                        }));
+                      }}/>
+                    ) : (
+                      <input type="number" placeholder="reps" value={set.reps} onChange={e => {
+                        const v = e.target.value;
+                        setActiveWorkout(p => ({
+                          ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.map((s, idx) => idx === i ? { ...s, reps: v } : s) } : e)
+                        }));
+                      }}/>
+                    )}
                   </div>
                 ))}
               </div>
@@ -469,6 +500,11 @@ function App() {
                   ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: [...e.sets, { weight: last.weight, reps: '' }] } : e)
                 }));
               }}>+ LISÄÄ SARJA</button>
+              {!showWeight && (
+                <button className="add-set-pill extra-load-btn" onClick={() => setActiveWorkout(p => ({
+                  ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, extraLoad: true } : e)
+                }))}>+ LISÄPAINO</button>
+              )}
               <input
                 type="text"
                 className="note-input"
@@ -515,6 +551,12 @@ function App() {
       </main>
 
       <button className="main-save-btn" onClick={async () => {
+        const badTime = activeWorkout.exercises.find(ex =>
+          getExerciseType(ex.currentName) === 'time' && ex.sets.some(s => s.reps && parseDuration(s.reps) === null));
+        if (badTime) {
+          alert(`Tarkista aika liikkeessä ${badTime.currentName}. Kirjoita esim. 1:24 tai 45.`);
+          return;
+        }
         if (!window.confirm("Tallennetaanko?")) return;
         const payload = activeWorkout.exercises.map(ex => {
           const d = {
@@ -526,9 +568,12 @@ function App() {
           // Muistiinpano Sheetin olemassa olevaan notes-sarakkeeseen. Heittomerkki estää
           // Sheetsiä tulkitsemasta =- tai +-alkuista tekstiä kaavaksi.
           if (ex.notes && ex.notes.trim()) d.notes = "'" + ex.notes.trim();
+          const saveType = getExerciseType(ex.currentName);
           ex.sets.forEach((s, i) => {
             if (i < 5) {
-              d[`s${i + 1}_reps`] = s.reps ? "'" + s.reps : "";
+              // Aikaliikkeissä "1:24" tallennetaan sekunteina (84) toistosarakkeeseen.
+              const repsValue = saveType === 'time' ? parseDuration(s.reps) : s.reps;
+              d[`s${i + 1}_reps`] = repsValue !== null && repsValue !== '' && repsValue !== undefined ? "'" + repsValue : "";
               d[`s${i + 1}_weight`] = s.weight ? "'" + s.weight : "";
             }
           });

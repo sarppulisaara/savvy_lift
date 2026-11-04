@@ -4,7 +4,7 @@ import { formatDate } from './stats.js';
 // Viikkonäkymä: tämän viikon (ma–su) sarjat lihasryhmittäin.
 // Treenin aikana mukana näkyvät myös meneillään olevan treenin kirjatut sarjat,
 // jotta ruuhkassa liikkeitä vaihtaessa näkee, mitkä ryhmät ovat jäämässä vähälle.
-export default function WeekView({ summary, muscleOrder, compact = false }) {
+export default function WeekView({ summary, muscleOrder, compact = false, loading = false }) {
   const groups = [
     ...muscleOrder,
     ...Object.keys({ ...summary.saved, ...summary.today }).filter(m => !muscleOrder.includes(m))
@@ -44,7 +44,7 @@ export default function WeekView({ summary, muscleOrder, compact = false }) {
       </div>
 
       <p className="chart-caption">
-        Sarjoja lihasryhmittäin{hasToday ? ' · vaaleampi osa = tämä treeni' : ''}
+        {loading ? 'Päivitetään… · ' : ''}Luku = tehdyt sarjat tällä viikolla{hasToday ? ' · vaaleampi osa = tämä treeni' : ''}
       </p>
     </div>
   );

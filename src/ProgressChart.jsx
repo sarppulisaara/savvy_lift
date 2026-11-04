@@ -1,15 +1,17 @@
 import React from 'react';
 import { formatDate } from './stats.js';
+import { formatDuration } from './exerciseTypes.js';
 
-// Kehityskäyrä yhdelle liikkeelle: suurin paino per kerta (tai toistot kehonpainoliikkeissä).
+// Kehityskäyrä yhdelle liikkeelle: suurin paino per kerta (tai toistot / aika kehonpainoliikkeissä).
 // `progress` tulee stats.js:n getProgress-funktiosta.
-export default function ProgressChart({ name, progress, onClose }) {
+export default function ProgressChart({ name, progress, type = 'weight', onClose }) {
   const sessions = progress.slice(-15);
   const bodyweight = sessions.length > 0 && sessions.every(s => s.top <= 1);
   const values = sessions.map(s =>
     bodyweight ? Math.max(...s.allSets.map(x => x.reps)) : s.top
   );
-  const unit = bodyweight ? 'toistoa' : 'kg';
+  const isTime = bodyweight && type === 'time';
+  const unit = isTime ? 'min:s' : bodyweight ? 'toistoa' : 'kg';
 
   const W = 320, H = 170, padL = 34, padR = 10, padT = 14, padB = 26;
   const min = values.length ? Math.min(...values) : 0;
@@ -21,6 +23,7 @@ export default function ProgressChart({ name, progress, onClose }) {
   const y = (v) => padT + (H - padT - padB) * (1 - (v - lo) / (hi - lo));
   const points = values.map((v, i) => `${x(i)},${y(v)}`).join(' ');
   const fmt = (n) => String(parseFloat(Number(n).toFixed(1)));
+  const fmtVal = (n) => (isTime ? formatDuration(n) : fmt(n));
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
@@ -35,11 +38,11 @@ export default function ProgressChart({ name, progress, onClose }) {
         ) : (
           <>
             <svg viewBox={`0 0 ${W} ${H}`} className="progress-chart" role="img"
-              aria-label={`${name}: ${bodyweight ? 'toistot' : 'paino'} viimeisillä kerroilla`}>
+              aria-label={`${name}: ${isTime ? 'aika' : bodyweight ? 'toistot' : 'paino'} viimeisillä kerroilla`}>
               {[min, max].filter((v, i, a) => a.indexOf(v) === i).map(v => (
                 <g key={v}>
                   <line x1={padL} x2={W - padR} y1={y(v)} y2={y(v)} className="chart-grid" />
-                  <text x={padL - 6} y={y(v) + 4} textAnchor="end" className="chart-label">{fmt(v)}</text>
+                  <text x={padL - 6} y={y(v) + 4} textAnchor="end" className="chart-label">{fmtVal(v)}</text>
                 </g>
               ))}
               <polyline points={points} className="chart-line" />
@@ -54,7 +57,7 @@ export default function ProgressChart({ name, progress, onClose }) {
               )}
             </svg>
             <p className="chart-caption">
-              {bodyweight ? 'Parhaan sarjan toistot' : 'Suurin paino'} viimeisillä {sessions.length} kerralla ({unit})
+              {isTime ? 'Pisin sarja' : bodyweight ? 'Parhaan sarjan toistot' : 'Suurin paino'} viimeisillä {sessions.length} kerralla ({unit})
             </p>
 
             <div className="history-list">
@@ -62,7 +65,9 @@ export default function ProgressChart({ name, progress, onClose }) {
                 <div key={i} className="history-row">
                   <span className="history-date">{formatDate(s.time)}</span>
                   <span>
-                    {bodyweight
+                    {isTime
+                      ? s.allSets.map(x => formatDuration(x.reps)).join(' / ')
+                      : bodyweight
                       ? `${s.allSets.map(x => fmt(x.reps)).join(' / ')} toistoa`
                       : `${fmt(s.top)} kg × ${s.reps.map(fmt).join(' / ')}`}
                   </span>

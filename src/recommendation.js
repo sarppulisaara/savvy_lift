@@ -11,6 +11,8 @@
 //  - Muuten                                           -> PIDÄ paino, tavoittele lisää toistoja
 //  - Yli GAP_DAYS päivää edellisestä kerrasta         -> palaa n. 90 %:lla
 
+import { formatDuration } from './exerciseTypes.js';
+
 export const GAP_DAYS = 14;
 const BODYWEIGHT_MAX = 1; // 0 tai 1 kg = kehonpaino (esim. Dead Bug, lankku)
 
@@ -88,7 +90,7 @@ const parseRange = (range) => {
   return null;
 };
 
-export const getRecommendation = (history, name, range, increment, dictionary, now = Date.now()) => {
+export const getRecommendation = (history, name, range, increment, dictionary, now = Date.now(), type = 'weight') => {
   const sessions = findHistory(history, name, dictionary);
   if (sessions.length === 0) return { text: 'Ei historiaa', status: 'normal' };
 
@@ -97,9 +99,29 @@ export const getRecommendation = (history, name, range, increment, dictionary, n
   const repsText = a.work.map(s => fmt(s.reps)).join('/');
 
   // Kehonpainoliikkeet: näytetään vain toistot.
+  // Kehonpaino- ja aikaliikkeet (ilman lisäpainoa): suositus toistoista tai sekunneista.
   if (a.top <= BODYWEIGHT_MAX) {
-    const reps = last.sets.map(s => fmt(s.reps)).join('/');
-    return { text: `Viimeksi: ${reps} toistoa`, status: 'normal' };
+    const r0 = parseRange(range);
+    const vals = last.sets.map(s => s.reps).filter(v => v > 0);
+    if (vals.length === 0) return { text: 'Viimeksi: -', status: 'normal' };
+
+    if (type === 'time') {
+      const shown = vals.map(formatDuration).join(' / ');
+      const lastT = `Viimeksi ${shown}`;
+      if (r0 && vals.every(v => v >= r0.max)) {
+        return { text: `Tavoite täynnä! Kokeile vaikeampaa versiota tai lisäpainoa (${lastT})`, status: 'level-up' };
+      }
+      // Tavoite: lyhintä sarjaa 5 s pidempi jokaisessa sarjassa, kuitenkin haarukan sisällä.
+      const target = Math.min(r0 ? r0.max : Infinity, Math.max(r0 ? r0.min : 0, Math.min(...vals) + 5));
+      return { text: `Tavoite: ${formatDuration(target)} jokaisessa sarjassa (${lastT})`, status: 'normal' };
+    }
+
+    const shown = vals.map(fmt).join('/');
+    const lastT = `Viimeksi ${shown} toistoa`;
+    if (r0 && vals.every(v => v >= r0.max)) {
+      return { text: `Tavoite täynnä! Vaikeuta liikettä tai lisää painoa (${lastT})`, status: 'level-up' };
+    }
+    return { text: r0 ? `Tavoite: ${r0.max}/sarja (${lastT})` : lastT, status: 'normal' };
   }
 
   const lastText = `Viimeksi ${fmt(a.top)}kg: ${repsText}`;
