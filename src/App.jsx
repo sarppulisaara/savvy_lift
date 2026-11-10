@@ -302,6 +302,16 @@ const ALL_EXERCISES = (() => {
   return Array.from(byName.values());
 })();
 
+// Kortin tavoitehaarukka ja painoaskel. Kun liike on swapattu, ne haetaan vaihdetun
+// liikkeen omasta määrittelystä; kortin omia arvoja käytetään vain, jos liikettä ei löydy.
+const exerciseParams = (ex) => {
+  if (ex.currentName !== ex.name) {
+    const def = ALL_EXERCISES.find(e => e.name === ex.currentName);
+    if (def) return { targetReps: def.targetReps, increment: def.increment };
+  }
+  return { targetReps: ex.targetReps, increment: ex.increment };
+};
+
 const MUSCLE_ORDER = ['Jalat', 'Pakarat', 'Lantio', 'Rinta', 'Selkä', 'Takaketju', 'Alaselkä', 'Olkapäät', 'Takaolkapää', 'Hauis', 'Ojentajat', 'Core'];
 
 // Liikkeet ryhmiteltynä lihasryhmittäin "+ LISÄÄ LIIKE" -valikon osioita varten.
@@ -440,7 +450,8 @@ function App() {
         {showWeek && <WeekView summary={weekSummary} muscleOrder={MUSCLE_ORDER} loading={historyLoading} compact />}
 
         {activeWorkout.exercises.map(ex => {
-          const info = getRecommendation(ex.currentName, ex.targetReps, ex);
+          const params = exerciseParams(ex);
+          const info = getRecommendation(ex.currentName, params.targetReps, params);
           const lastNote = getLastNote(sheetsHistory, ex.currentName, EXERCISE_DICTIONARY);
           const exType = getExerciseType(ex.currentName);
           // Kehonpaino- ja aikaliikkeissä kg-kenttä näkyy vain, jos lisäpaino on otettu käyttöön.

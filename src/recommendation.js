@@ -76,6 +76,16 @@ export const findHistory = (history, name, dictionary) => {
     });
 };
 
+// Kaikki painot, joilla liikettä on aiemmin tehty (nousevassa järjestyksessä).
+// Suositukset pysyvät näin painoissa, jotka laitteesta oikeasti löytyvät.
+const usedWeights = (sessions) => {
+  const set = new Set();
+  sessions.forEach(s => s.sets.forEach(x => { if (x.weight > 0) set.add(x.weight); }));
+  return [...set].sort((a, b) => a - b);
+};
+
+const EPS = 1e-9;
+
 const analyse = (session) => {
   const top = Math.max(...session.sets.map(s => s.weight));
   const work = session.sets.filter(s => s.weight === top && s.reps > 0);
@@ -127,12 +137,16 @@ export const getRecommendation = (history, name, range, increment, dictionary, n
   const lastText = `Viimeksi ${fmt(a.top)}kg: ${repsText}`;
   const inc = parseNum(increment);
   const r = parseRange(range);
+  const weights = usedWeights(sessions);
 
   // Tauko: palaa noin 90 %:lla, pyöristettynä liikkeen omaan painoaskeleeseen.
   const daysSince = isNaN(last.time) ? 0 : (now - last.time) / 86400000;
   if (daysSince > GAP_DAYS && inc > 0) {
     const steps = Math.max(1, Math.round((a.top * 0.1) / inc));
-    const back = Math.max(inc, a.top - steps * inc);
+    const computed = Math.max(inc, a.top - steps * inc);
+    // Mieluummin aiemmin käytetty paino, joka on enintään lasketun 90 %:n verran.
+    const known = weights.filter(w => w <= computed + EPS);
+    const back = known.length ? known[known.length - 1] : computed;
     return {
       text: `Tauon jälkeen: ${fmt(back)}kg (${lastText}, ${Math.floor(daysSince)} pv sitten)`,
       status: 'deload'
@@ -143,13 +157,17 @@ export const getRecommendation = (history, name, range, increment, dictionary, n
 
   // Kaikki työsarjat haarukan yläpäähän -> nosta.
   if (a.work.every(s => s.reps >= r.max)) {
-    return { text: `Suositus: ${fmt(a.top + inc)}kg (${lastText})`, status: 'level-up' };
+    // Pienin aiemmin käytetty paino nykyisen yläpuolella (enintään 3 askelta), muuten + increment.
+    const next = weights.find(w => w > a.top + EPS && w <= a.top + 3 * inc + EPS);
+    return { text: `Suositus: ${fmt(next ?? a.top + inc)}kg (${lastText})`, status: 'level-up' };
   }
 
   // Kaksi kertaa peräkkäin samalla painolla alle haarukan -> kevennä.
   const prev = sessions.length > 1 ? analyse(sessions[sessions.length - 2]) : null;
   if (a.avgReps < r.min && prev && prev.top === a.top && prev.avgReps < r.min && a.top - inc > 0) {
-    return { text: `Kevennä: ${fmt(a.top - inc)}kg, tavoite ${r.min}-${r.max} (${lastText})`, status: 'deload' };
+    const lower = weights.filter(w => w < a.top - EPS);
+    const lighter = lower.length ? lower[lower.length - 1] : a.top - inc;
+    return { text: `Kevennä: ${fmt(lighter)}kg, tavoite ${r.min}-${r.max} (${lastText})`, status: 'deload' };
   }
 
   return { text: `Pidä ${fmt(a.top)}kg, tavoite ${r.max}/sarja (${lastText})`, status: 'normal' };
