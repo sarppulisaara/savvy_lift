@@ -12,7 +12,10 @@ export const EXERCISE_TYPES = {
   'Dead Bug': 'bodyweight',
   'Jalkojen nostot selinmakuulla': 'bodyweight',
   'Vatsarutistus jumppapallolla': 'bodyweight',
-  'Voimapyörä': 'bodyweight'
+  'Voimapyörä': 'bodyweight',
+  'Yhden jalan lantionnosto': 'bodyweight',
+  'Kuminauhakävely sivuttain': 'bodyweight',
+  'Kylkilankku jalan nostolla': 'time'
 };
 
 export const getExerciseType = (name) => EXERCISE_TYPES[name] || 'weight';

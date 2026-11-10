@@ -51,7 +51,13 @@ const EXERCISE_DICTIONARY = {
   'Face Pull': ['Face pull', 'Facepull', 'Kasvoveto taljassa'],
   'Takaolkapäät laitteessa': ['Reverse pec deck', 'Takaolkapäälaite'],
   'Vipunostot taakse': ['Reverse fly käsipainoilla', 'Takaolkapääviparit'],
-  'Reverse Fly': ['Reverse fly', 'Takaolkapää reverse fly']
+  'Reverse Fly': ['Reverse fly', 'Takaolkapää reverse fly'],
+  'Askelkyykky taaksepäin käsipainoilla': ['Reverse lunge', 'Takaperin askelkyykky'],
+  'Yhden jalan romanialainen maastaveto': ['SL RDL', 'Yhden jalan RDL'],
+  'Sivuaskelkyykky käsipainolla': ['Lateral lunge', 'Goblet sivuaskelkyykky'],
+  'Loitonnus kaapelilla seisten': ['Cable hip abduction'],
+  'Kuminauhakävely sivuttain': ['Band walk', 'Monster walk'],
+  'Kylkilankku jalan nostolla': ['Kylkilankku', 'Side plank']
 };
 
 // MUUTETTU VAIN TREENIRAKENNE: A/B -> A/B/C
@@ -59,14 +65,15 @@ const WORKOUT_DATA = {
   A: [
     {
       id: 'a1',
-      name: 'Smith Bulgarian Split Squat',
+      name: 'Askelkyykky taaksepäin käsipainoilla',
       muscle: 'Jalat',
       alternatives: [
+        'Smith Bulgarian Split Squat',
         'Bulgarian Split Squat käsipainoilla',
-        'Askelkyykky käsipainoilla'
+        'Step-up käsipainoilla'
       ],
-      targetReps: '6-8',
-      increment: 2.5
+      targetReps: '8-12',
+      increment: 1.0
     },
     {
       id: 'a2',
@@ -120,6 +127,17 @@ const WORKOUT_DATA = {
       ],
       targetReps: '12-20',
       increment: 1.0
+    },
+    {
+      id: 'a7',
+      name: 'Loitonnus kaapelilla seisten',
+      muscle: 'Lantio',
+      alternatives: [
+        'Kuminauhakävely sivuttain',
+        'Reiden loitonnus (abductor)'
+      ],
+      targetReps: '10-15',
+      increment: 2.5
     }
   ],
 
@@ -130,7 +148,8 @@ const WORKOUT_DATA = {
       muscle: 'Pakarat',
       alternatives: [
         'Lantionnosto tangolla',
-        'Lantionnosto käsipainoilla'
+        'Lantionnosto käsipainoilla',
+        'Yhden jalan lantionnosto'
       ],
       targetReps: '6-8',
       increment: 5.0
@@ -180,6 +199,17 @@ const WORKOUT_DATA = {
       ],
       targetReps: '10-15',
       increment: 1.0
+    },
+    {
+      id: 'b6',
+      name: 'Kuminauhakävely sivuttain',
+      muscle: 'Lantio',
+      alternatives: [
+        'Sivuaskelkyykky käsipainolla',
+        'Kylkilankku jalan nostolla'
+      ],
+      targetReps: '12-20',
+      increment: 0
     }
   ],
 
@@ -190,7 +220,8 @@ const WORKOUT_DATA = {
       muscle: 'Takaketju',
       alternatives: [
         'Selänojennus lisäpainolla',
-        'Reiden koukistus'
+        'Reiden koukistus',
+        'Yhden jalan romanialainen maastaveto'
       ],
       targetReps: '8-10',
       increment: 5.0
@@ -251,6 +282,17 @@ const WORKOUT_DATA = {
       ],
       targetReps: '10-15',
       increment: 1.0
+    },
+    {
+      id: 'c7',
+      name: 'Kylkilankku jalan nostolla',
+      muscle: 'Lantio',
+      alternatives: [
+        'Loitonnus kaapelilla seisten',
+        'Kuminauhakävely sivuttain'
+      ],
+      targetReps: '20-45', // aika sekunteina
+      increment: 0
     }
   ]
 };
@@ -258,10 +300,22 @@ const WORKOUT_DATA = {
 // Liikkeitä jotka eivät ole minkään treenipäivän pääliike, mutta löytyvät silti
 // "+ LISÄÄ LIIKE" -valikosta. Lisää tähän uusia rivejä sitä mukaa kun liikkeitä tulee lisää.
 const EXTRA_EXERCISES = [
+  { name: 'Smith Bulgarian Split Squat', muscle: 'Jalat', targetReps: '6-8', increment: 2.5 },
+  { name: 'Askelkyykky taaksepäin käsipainoilla', muscle: 'Jalat', targetReps: '8-12', increment: 1.0 },
+  { name: 'Step-up käsipainoilla', muscle: 'Jalat', targetReps: '8-12', increment: 1.0 },
+  { name: 'Yhden jalan romanialainen maastaveto', muscle: 'Takaketju', targetReps: '8-12', increment: 2.0 }, // yksi käsipaino, kirjataan sen paino
+  { name: 'Yhden jalan lantionnosto', muscle: 'Pakarat', targetReps: '10-15', increment: 0 }, // kehonpaino
+  { name: 'Sivuaskelkyykky käsipainolla', muscle: 'Lantio', targetReps: '8-12', increment: 2.0 },
+  { name: 'Loitonnus kaapelilla seisten', muscle: 'Lantio', targetReps: '10-15', increment: 2.5 },
+  { name: 'Kuminauhakävely sivuttain', muscle: 'Lantio', targetReps: '12-20', increment: 0 }, // askelta/suunta, kehonpaino
+  { name: 'Kylkilankku jalan nostolla', muscle: 'Lantio', targetReps: '20-45', increment: 0 }, // aika sekunteina
   { name: 'Bulgarian Split Squat käsipainoilla', muscle: 'Jalat', targetReps: '6-8', increment: 2.5 },
   { name: 'Askelkyykky käsipainoilla', muscle: 'Jalat', targetReps: '8-10', increment: 2.5 },
   { name: 'Jalkaprässi – vaakaprässi', muscle: 'Jalat', targetReps: '8-10', increment: 5.0 },
-  { name: 'Reiden loitonnus (abductor)', muscle: 'Lantio', targetReps: '12-15', increment: 5.0 },
+  {
+    name: 'Reiden loitonnus (abductor)', muscle: 'Lantio', targetReps: '12-15', increment: 5.0,
+    alternatives: ['Loitonnus kaapelilla seisten', 'Kuminauhakävely sivuttain', 'Sivuaskelkyykky käsipainolla', 'Kylkilankku jalan nostolla']
+  },
   { name: 'Reiden lähennys (adductor)', muscle: 'Lantio', targetReps: '12-15', increment: 5.0 },
   { name: 'Lantionnosto tangolla', muscle: 'Pakarat', targetReps: '6-8', increment: 5.0 },
   { name: 'Lantionnosto käsipainoilla', muscle: 'Pakarat', targetReps: '8-10', increment: 2.5 },
