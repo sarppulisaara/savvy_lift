@@ -564,6 +564,15 @@ function App() {
                         }));
                       }}/>
                     )}
+                    {ex.sets.length > 1 && (
+                      <button className="delete-set-btn" aria-label={`Poista sarja ${i + 1}`} onClick={() => {
+                        const hasData = set.reps !== '' || set.weight !== '';
+                        if (hasData && !window.confirm(`Poistetaanko sarja ${i + 1}?`)) return;
+                        setActiveWorkout(p => ({
+                          ...p, exercises: p.exercises.map(e => e.id === ex.id ? { ...e, sets: e.sets.filter((_, idx) => idx !== i) } : e)
+                        }));
+                      }}>✕</button>
+                    )}
                   </div>
                 ))}
               </div>
