@@ -12,10 +12,15 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
     <title>SAVVY LIFT</title>
-  <script type="module" crossorigin src="/assets/index-DZdhZ0Mn.js"></script>
+  <script type="module" crossorigin src="/assets/index-BxYArODe.js"></script>
   <link rel="stylesheet" crossorigin href="/assets/index-BDTO7ZGi.css">
 </head>
   <body>
     <div id="root"></div>
+    <script>
+      // Historian haku alkaa heti, rinnan sovelluksen latauksen kanssa (App.jsx käyttää tätä).
+      window.__historyFetch = fetch("https://script.google.com/macros/s/AKfycbztsRf-a7P1H29fxHOX3xy_ydwWN_RiX9qbGlGlb7EXEbkduJrdKwYOPjVOQXc3Qyp-/exec")
+        .then(function (r) { return r.json(); });
+    </script>
   </body>
 </html>
