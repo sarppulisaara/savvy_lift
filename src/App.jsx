@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import './App.css';
 import { getRecommendation as getRecommendationFromHistory } from './recommendation.js';
 import { getWeekSummary, getProgress, getLastNote, formatDate } from './stats.js';
@@ -338,12 +338,17 @@ function App() {
   const API_URL = "https://script.google.com/macros/s/AKfycbztsRf-a7P1H29fxHOX3xy_ydwWN_RiX9qbGlGlb7EXEbkduJrdKwYOPjVOQXc3Qyp-/exec";
 
   useEffect(() => {
-    fetch(API_URL)
-      .then(res => res.json())
+    // index.html käynnistää haun jo ennen kuin sovellus on latautunut.
+    const request = window.__historyFetch || fetch(API_URL).then(res => res.json());
+    request
       .then(data => {
         const rows = Array.isArray(data) ? data : [];
+        const json = JSON.stringify(rows);
+        let cached = null;
+        try { cached = localStorage.getItem(HISTORY_CACHE_KEY); } catch { /* ei väliä */ }
+        if (json === cached) return; // ei muutoksia -> ei turhaa uudelleenpiirtoa
         setSheetsHistory(rows);
-        try { localStorage.setItem(HISTORY_CACHE_KEY, JSON.stringify(rows)); } catch { /* välimuisti ei pakollinen */ }
+        try { localStorage.setItem(HISTORY_CACHE_KEY, json); } catch { /* välimuisti ei pakollinen */ }
       })
       .finally(() => setHistoryLoading(false))
       .catch(err => console.error(err));
@@ -360,7 +365,10 @@ function App() {
   const getRecommendation = (name, range, obj) =>
     getRecommendationFromHistory(sheetsHistory, name, range, obj.increment, EXERCISE_DICTIONARY, Date.now(), getExerciseType(name));
 
-  const weekSummary = getWeekSummary(sheetsHistory, ALL_EXERCISES, EXERCISE_DICTIONARY, activeWorkout);
+  const weekSummary = useMemo(
+    () => getWeekSummary(sheetsHistory, ALL_EXERCISES, EXERCISE_DICTIONARY, activeWorkout),
+    [sheetsHistory, activeWorkout]
+  );
 
   const chartModal = chartFor && (
     <ProgressChart
