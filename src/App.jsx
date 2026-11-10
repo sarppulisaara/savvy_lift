@@ -4,6 +4,9 @@ import { getRecommendation as getRecommendationFromHistory } from './recommendat
 import { getWeekSummary, getProgress, getLastNote, formatDate } from './stats.js';
 import WeekView from './WeekView';
 import ProgressChart from './ProgressChart';
+import FeedbackDialog from './FeedbackDialog';
+import FeedbackView from './FeedbackView';
+import { buildFeedbackRow } from './feedback.js';
 import { getExerciseType, parseDuration } from './exerciseTypes.js';
 
 const DRAFT_KEY = 'savvy_lift_active_workout';
@@ -398,6 +401,9 @@ function App() {
   const [expandedMuscle, setExpandedMuscle] = useState(null);
   const [chartFor, setChartFor] = useState(null);   // liikkeen nimi, jonka kehityskäyrä on auki
   const [showWeek, setShowWeek] = useState(false);  // viikkonäkymä treenin aikana
+  const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);  // palauteikkuna tallennuksen yhteydessä
+  const [saving, setSaving] = useState(false);
+  const [showFeedbackView, setShowFeedbackView] = useState(false);      // PALAUTE-näkymä etusivulla
 
   const API_URL = "https://script.google.com/macros/s/AKfycbztsRf-a7P1H29fxHOX3xy_ydwWN_RiX9qbGlGlb7EXEbkduJrdKwYOPjVOQXc3Qyp-/exec";
 
@@ -471,6 +477,54 @@ function App() {
     setExpandedMuscle(null);
   };
 
+  // Treenin tallennus. Palaute (tai null, jos ohitettu) lähetetään samassa POSTissa yhtenä lisärivinä.
+  const saveWorkout = async (feedback) => {
+    if (saving) return;
+    const payload = activeWorkout.exercises.map(ex => {
+      const d = {
+        Aikaleima: new Date().toLocaleDateString('fi-FI') + " " + new Date().toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' }),
+        workoutType: activeWorkout.type,
+        musclegroup: ex.muscle,
+        exercisename: ex.currentName,
+      };
+      // Muistiinpano Sheetin olemassa olevaan notes-sarakkeeseen. Heittomerkki estää
+      // Sheetsiä tulkitsemasta =- tai +-alkuista tekstiä kaavaksi.
+      if (ex.notes && ex.notes.trim()) d.notes = "'" + ex.notes.trim();
+      const saveType = getExerciseType(ex.currentName);
+      ex.sets.forEach((s, i) => {
+        if (i < 5) {
+          // Aikaliikkeissä "1:24" tallennetaan sekunteina (84) toistosarakkeeseen.
+          const repsValue = saveType === 'time' ? parseDuration(s.reps) : s.reps;
+          d[`s${i + 1}_reps`] = repsValue !== null && repsValue !== '' && repsValue !== undefined ? "'" + repsValue : "";
+          d[`s${i + 1}_weight`] = s.weight ? "'" + s.weight : "";
+        }
+      });
+      return d;
+    });
+
+    if (feedback) {
+      const now = new Date();
+      const stamp = now.toLocaleDateString('fi-FI') + " " + now.toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' });
+      payload.push(buildFeedbackRow(activeWorkout.type, stamp, feedback));
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
+      const text = await res.text();
+      if (!res.ok || !text.includes("Success")) {
+        throw new Error(text || `HTTP ${res.status}`);
+      }
+      alert(text.includes("palaute ei") ? "Treeni tallennettu, mutta palaute ei tallentunut." : "Tallennettu!");
+      localStorage.removeItem(DRAFT_KEY);
+      setShowFeedbackDialog(false);
+      setActiveWorkout(null);
+    } catch (e) {
+      alert("Tallennus epäonnistui! Treeni EI kadonnut — se on yhä tallessa täällä puhelimessasi, ja voit yrittää tallentaa uudelleen (esim. paremmalla verkolla). Virhe: " + e.message);
+    }
+    setSaving(false);
+  };
+
   if (!activeWorkout) {
     return (
       <div className="container center-view">
@@ -479,8 +533,17 @@ function App() {
           <button className="workout-select-btn a-btn" onClick={() => startWorkout('A')}>TREENI A</button>
           <button className="workout-select-btn b-btn" onClick={() => startWorkout('B')}>TREENI B</button>
           <button className="workout-select-btn c-btn" onClick={() => startWorkout('C')}>TREENI C</button>
+          <button className="workout-select-btn d-btn" onClick={() => setShowFeedbackView(true)}>PALAUTE</button>
         </div>
         <WeekView summary={weekSummary} muscleOrder={MUSCLE_ORDER} loading={historyLoading} />
+        {showFeedbackView && (
+          <FeedbackView
+            apiUrl={API_URL}
+            history={sheetsHistory}
+            dictionary={EXERCISE_DICTIONARY}
+            onClose={() => setShowFeedbackView(false)}
+          />
+        )}
       </div>
     );
   }
@@ -632,7 +695,7 @@ function App() {
         )}
       </main>
 
-      <button className="main-save-btn" onClick={async () => {
+      <button className="main-save-btn" onClick={() => {
         const badTime = activeWorkout.exercises.find(ex =>
           getExerciseType(ex.currentName) === 'time' && ex.sets.some(s => s.reps && parseDuration(s.reps) === null));
         if (badTime) {
@@ -640,41 +703,15 @@ function App() {
           return;
         }
         if (!window.confirm("Tallennetaanko?")) return;
-        const payload = activeWorkout.exercises.map(ex => {
-          const d = {
-            Aikaleima: new Date().toLocaleDateString('fi-FI') + " " + new Date().toLocaleTimeString('fi-FI', { hour: '2-digit', minute: '2-digit' }),
-            workoutType: activeWorkout.type,
-            musclegroup: ex.muscle,
-            exercisename: ex.currentName,
-          };
-          // Muistiinpano Sheetin olemassa olevaan notes-sarakkeeseen. Heittomerkki estää
-          // Sheetsiä tulkitsemasta =- tai +-alkuista tekstiä kaavaksi.
-          if (ex.notes && ex.notes.trim()) d.notes = "'" + ex.notes.trim();
-          const saveType = getExerciseType(ex.currentName);
-          ex.sets.forEach((s, i) => {
-            if (i < 5) {
-              // Aikaliikkeissä "1:24" tallennetaan sekunteina (84) toistosarakkeeseen.
-              const repsValue = saveType === 'time' ? parseDuration(s.reps) : s.reps;
-              d[`s${i + 1}_reps`] = repsValue !== null && repsValue !== '' && repsValue !== undefined ? "'" + repsValue : "";
-              d[`s${i + 1}_weight`] = s.weight ? "'" + s.weight : "";
-            }
-          });
-          return d;
-        });
-
-        try {
-          const res = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-          const text = await res.text();
-          if (!res.ok || !text.includes("Success")) {
-            throw new Error(text || `HTTP ${res.status}`);
-          }
-          alert("Tallennettu!");
-          localStorage.removeItem(DRAFT_KEY);
-          setActiveWorkout(null);
-        } catch (e) {
-          alert("Tallennus epäonnistui! Treeni EI kadonnut — se on yhä tallessa täällä puhelimessasi, ja voit yrittää tallentaa uudelleen (esim. paremmalla verkolla). Virhe: " + e.message);
-        }
+        setShowFeedbackDialog(true);
       }}>TALLENNA TREENI</button>
+      {showFeedbackDialog && (
+        <FeedbackDialog
+          saving={saving}
+          onSubmit={saveWorkout}
+          onCancel={() => setShowFeedbackDialog(false)}
+        />
+      )}
       {chartModal}
     </div>
   );

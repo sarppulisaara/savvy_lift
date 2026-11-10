@@ -14,7 +14,7 @@
 import { formatDuration } from './exerciseTypes.js';
 
 export const GAP_DAYS = 14;
-const BODYWEIGHT_MAX = 1; // 0 tai 1 kg = kehonpaino (esim. Dead Bug, lankku)
+export const BODYWEIGHT_MAX = 1; // 0 tai 1 kg = kehonpaino (esim. Dead Bug, lankku)
 
 export const parseNum = (val) => {
   if (val === null || val === undefined || val === '') return 0;
@@ -38,11 +38,11 @@ export const parseTimestamp = (raw) => {
   return isNaN(t) ? NaN : t;
 };
 
-const rowName = (h) =>
+export const rowName = (h) =>
   String(h.exercisename || h.Liike || h.liike || h.exerciseName || h.ExerciseName || '')
     .toLowerCase().trim();
 
-const rowSets = (h) => {
+export const rowSets = (h) => {
   const sets = [];
   for (let i = 1; i <= 5; i++) {
     const weight = parseNum(h[`s${i}_weight`]);

@@ -342,3 +342,22 @@ input[type=number] { -moz-appearance: textfield; appearance: none; }
 /* --- AIKA- JA KEHONPAINOLIIKKEET --- */
 .input-invalid { border-color: #b91c1c !important; background: #fee2e2 !important; }
 .extra-load-btn { background: #fff; font-size: 0.8rem; padding-top: 8px; padding-bottom: 8px; }
+
+/* --- TREENIPALAUTE --- */
+.feedback-field { display: flex; flex-direction: column; gap: 6px; width: 100%; font-weight: 700; font-size: 0.85rem; }
+.chip-row { display: flex; gap: 6px; }
+.chip-row.wrap { flex-wrap: wrap; }
+.chip { flex: 1; border: var(--border-thick); border-radius: 12px; background: #fff; padding: 10px 6px; font-family: 'Space Grotesk', sans-serif; font-weight: 900; cursor: pointer; }
+.chip.wide { flex: 0 1 auto; padding: 10px 12px; }
+.chip.on { background: var(--bento-lime); }
+.main-save-btn:disabled, .add-set-pill:disabled { opacity: 0.5; }
+.index-line { stroke: #ec4899; stroke-dasharray: 5 4; }
+.index-dot { fill: var(--bento-pink); }
+.legend-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; border: 2px solid #000; vertical-align: middle; }
+.legend-dot.energy { background: var(--bento-lime); }
+.legend-dot.index { background: var(--bento-pink); }
+.feedback-row { padding: 6px 0; border-bottom: 1px solid #e5e5e5; font-size: 0.85rem; }
+.feedback-row-head { display: flex; gap: 10px; align-items: baseline; }
+.feedback-row-head > span:nth-child(2) { flex: 1; }
+.feedback-index { font-weight: 800; font-variant-numeric: tabular-nums; }
+.feedback-sub { font-size: 0.78rem; opacity: 0.75; margin-left: 54px; }
